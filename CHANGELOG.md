@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-30
+
 ### Added
 
 - Landing “Próximamente”.
@@ -16,4 +18,4 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Preparación para despliegue del frontend en Vercel.
 
 [Unreleased]: https://github.com/Radar-Cultural/radar-community/compare/v0.1.0...HEAD
-
+[0.1.0]: https://github.com/Radar-Cultural/radar-community/releases/tag/v0.1.0
