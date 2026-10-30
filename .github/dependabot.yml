@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "12:00"
+      timezone: America/Mexico_City
+    open-pull-requests-limit: 5
+    labels:
+      - "type: enhancement"
+      - "area: frontend"
+    groups:
+      frontend-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    labels:
+      - "type: enhancement"
+      - "area: devops"
+

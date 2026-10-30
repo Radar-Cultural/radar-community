@@ -1,0 +1,35 @@
+name: Bug report
+description: Reporta un comportamiento reproducible que no funciona como se espera.
+title: "fix: "
+labels: ["type: bug", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Gracias por ayudarnos a mejorar Radar Community. No incluyas secretos ni reportes de seguridad.
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: ¿Qué ocurrió y qué esperabas que ocurriera?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      placeholder: "1. Abre...\n2. Selecciona...\n3. Observa..."
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Entorno
+      description: Navegador, sistema operativo, viewport y commit o URL.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidencia adicional
+      description: Capturas o mensajes de consola sin datos sensibles.
+

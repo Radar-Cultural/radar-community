@@ -1,0 +1,23 @@
+name: Documentation improvement
+description: Señala documentación ausente, ambigua o desactualizada.
+title: "docs: "
+labels: ["type: documentation", "status: needs-triage"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Documento o sección
+      placeholder: docs/deployment.md
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: Qué necesita mejorar
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Cambio sugerido
+

@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Reportar una vulnerabilidad
+    url: https://github.com/Radar-Cultural/radar-community/security/advisories/new
+    about: No publiques vulnerabilidades; utiliza el reporte privado de seguridad.
+

@@ -1,0 +1,29 @@
+name: Accessibility issue
+description: Reporta una barrera de acceso, teclado, contraste o tecnología de asistencia.
+title: "fix: accessibility — "
+labels: ["type: bug", "area: accessibility", "status: needs-triage"]
+body:
+  - type: textarea
+    id: barrier
+    attributes:
+      label: Barrera encontrada
+      description: Explica qué tarea no pudiste completar.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+    validations:
+      required: true
+  - type: input
+    id: assistive-tech
+    attributes:
+      label: Entorno y tecnología de asistencia
+      description: Navegador, sistema, lector de pantalla, zoom o forma de entrada, si aplica.
+  - type: input
+    id: standard
+    attributes:
+      label: Criterio relacionado
+      description: WCAG u otra referencia, si la conoces.
+

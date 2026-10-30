@@ -1,0 +1,33 @@
+name: Feature request
+description: Propón una mejora alineada con el alcance de Radar Community.
+title: "feat: "
+labels: ["type: feature", "status: needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema u oportunidad
+      description: Describe la necesidad antes de proponer la solución.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: ¿Qué resultado debería obtener la comunidad?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Alcance
+      options:
+        - label: La propuesta no depende de una API o backend que todavía no existe.
+          required: true
+        - label: No incluye fechas, alianzas, métricas ni datos no verificados.
+          required: true
+
