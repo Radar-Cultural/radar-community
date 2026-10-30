@@ -1,5 +1,6 @@
-# No hay reglas activas todavía.
-# Los equipos previstos aún no existen o no tienen acceso real al repositorio.
-# Cuando se configuren, las rutas técnicas deberán usar:
-# * @Radar-Cultural/desarrollo-tecnico
-
+# Revisión técnica por el equipo responsable de desarrollo.
+/frontend/ @Radar-Cultural/desarrollo-tecnico
+/.github/workflows/ @Radar-Cultural/desarrollo-tecnico
+/.github/dependabot.yml @Radar-Cultural/desarrollo-tecnico
+/.editorconfig @Radar-Cultural/desarrollo-tecnico
+/.env.example @Radar-Cultural/desarrollo-tecnico
