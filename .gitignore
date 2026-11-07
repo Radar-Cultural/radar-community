@@ -1,6 +1,12 @@
 # Dependencies and build output
 node_modules/
 dist/
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+staticfiles/
+.ruff_cache/
 
 # Local environment files
 .env
@@ -19,6 +25,5 @@ coverage/
 playwright-report/
 test-results/
 
-# Vercel local metadata
+# Legacy provider metadata must not be committed.
 .vercel/
-

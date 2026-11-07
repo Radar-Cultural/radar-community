@@ -1,0 +1,445 @@
+openapi: 3.1.0
+info:
+  title: Radar Cultural API
+  version: 0.2.0
+  description: >-
+    Contrato inicial de lectura pública para eventos culturales publicados y sus
+    catálogos. Las operaciones de escritura permanecen fuera de la API pública
+    mientras se define el flujo de identidad, revisión y moderación.
+  license:
+    name: Licencia de Radar Community pendiente
+servers:
+  - url: https://radarcultural.mx/api/v1
+    description: Producción
+  - url: http://127.0.0.1:8000/api/v1
+    description: Desarrollo local
+tags:
+  - name: Sistema
+  - name: Eventos
+  - name: Catálogos
+paths:
+  /status/:
+    get:
+      tags: [Sistema]
+      summary: Comprobar disponibilidad de la API
+      operationId: getApiStatus
+      responses:
+        '200':
+          description: Servicio disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status: ok
+                service: radar-cultural-api
+                version: v1
+  /events/:
+    get:
+      tags: [Eventos]
+      summary: Listar eventos publicados
+      description: Sólo devuelve eventos con publicación y visibilidad públicas.
+      operationId: listEvents
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: q
+          in: query
+          description: Búsqueda en título, resumen y descripción.
+          schema:
+            type: string
+            maxLength: 120
+        - name: category
+          in: query
+          description: Slug de categoría.
+          schema:
+            type: string
+        - name: audience
+          in: query
+          description: Slug de público objetivo.
+          schema:
+            type: string
+        - name: place
+          in: query
+          description: UUID del lugar.
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          description: Fecha mínima de inicio, ISO 8601.
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: Fecha máxima de inicio, ISO 8601.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Página de eventos públicos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEvents'
+        '400':
+          $ref: '#/components/responses/InvalidQuery'
+        '429':
+          $ref: '#/components/responses/Throttled'
+  /events/{slug}/:
+    get:
+      tags: [Eventos]
+      summary: Consultar un evento publicado
+      operationId: retrieveEvent
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evento público
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /categories/:
+    get:
+      tags: [Catálogos]
+      summary: Listar categorías activas
+      operationId: listCategories
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Página de categorías
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategories'
+  /audiences/:
+    get:
+      tags: [Catálogos]
+      summary: Listar públicos objetivo activos
+      operationId: listAudiences
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Página de públicos objetivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAudiences'
+  /places/:
+    get:
+      tags: [Catálogos]
+      summary: Listar lugares activos
+      operationId: listPlaces
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+      responses:
+        '200':
+          description: Página de lugares
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlaces'
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    PageSize:
+      name: page_size
+      in: query
+      description: Máximo 100 resultados.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+  responses:
+    InvalidQuery:
+      description: Parámetros de consulta inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso inexistente o no publicado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Throttled:
+      description: Límite temporal de solicitudes superado
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Status:
+      type: object
+      additionalProperties: false
+      required: [status, service, version]
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+        version:
+          type: string
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+      required: [detail]
+    Category:
+      type: object
+      additionalProperties: false
+      required: [id, name, slug, description]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+    Audience:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+    Place:
+      type: object
+      additionalProperties: false
+      required: [id, name, slug, kind, address, locality, region, country_code]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        kind:
+          type: string
+          enum: [venue, campus, building, room, outdoor, online, other]
+        address:
+          type: string
+        locality:
+          type: string
+        region:
+          type: string
+        country_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+        latitude:
+          type: string
+          nullable: true
+        longitude:
+          type: string
+          nullable: true
+        same_as:
+          type: string
+          format: uri
+    Organization:
+      type: object
+      additionalProperties: false
+      required: [name, slug, website, verified]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        website:
+          type: string
+          format: uri
+        same_as:
+          type: array
+          items:
+            type: string
+            format: uri
+        verified:
+          type: boolean
+    ScheduleItem:
+      type: object
+      additionalProperties: false
+      required: [title, starts_at, position]
+      properties:
+        title:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        position:
+          type: integer
+          minimum: 0
+    Event:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - slug
+        - title
+        - summary
+        - description
+        - starts_at
+        - event_status
+        - attendance_mode
+        - admission_type
+        - categories
+        - audiences
+        - schedule
+        - source_url
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        description:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        event_status:
+          type: string
+          enum: [EventScheduled, EventCancelled, EventPostponed, EventRescheduled]
+        attendance_mode:
+          type: string
+          enum: [OfflineEventAttendanceMode, OnlineEventAttendanceMode, MixedEventAttendanceMode]
+        admission_type:
+          type: string
+          enum: [free, paid]
+        admission_options:
+          type: array
+          items:
+            type: object
+        place:
+          oneOf:
+            - $ref: '#/components/schemas/Place'
+            - type: 'null'
+        online_url:
+          type: string
+          format: uri
+        organizer:
+          oneOf:
+            - $ref: '#/components/schemas/Organization'
+            - type: object
+              properties:
+                name:
+                  type: string
+              required: [name]
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        audiences:
+          type: array
+          items:
+            $ref: '#/components/schemas/Audience'
+        schedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleItem'
+        links:
+          type: array
+          items:
+            type: object
+        source_url:
+          type: string
+          format: uri
+        updated_at:
+          type: string
+          format: date-time
+    Pagination:
+      type: object
+      required: [count, next, previous]
+      properties:
+        count:
+          type: integer
+          minimum: 0
+        next:
+          type: [string, 'null']
+          format: uri
+        previous:
+          type: [string, 'null']
+          format: uri
+    PaginatedEvents:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [results]
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Event'
+    PaginatedCategories:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [results]
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+    PaginatedAudiences:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [results]
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Audience'
+    PaginatedPlaces:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [results]
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Place'
