@@ -1,13 +1,13 @@
 <template>
   <a class="brand" href="/" aria-label="Radar Cultural, página de inicio">
     <svg class="brand__mark" viewBox="0 0 48 48" aria-hidden="true">
-      <circle cx="24" cy="24" r="20" />
-      <circle cx="24" cy="24" r="11" />
-      <path d="M24 24 38 12A19 19 0 0 1 43 24Z" />
-      <circle class="brand__signal" cx="36" cy="17" r="2.5" />
-      <circle class="brand__core" cx="24" cy="24" r="3" />
+      <path class="brand__arc brand__arc--outer" d="M8 35A19 19 0 1 1 40 14" />
+      <path class="brand__arc brand__arc--middle" d="M13 32A14 14 0 1 1 35 15" />
+      <path class="brand__arc brand__arc--inner" d="M18 29A8.5 8.5 0 1 1 31 18" />
+      <path class="brand__needle" d="m24 24 13-12" />
+      <circle class="brand__core" cx="24" cy="24" r="3.4" />
     </svg>
-    <span>Radar Cultural</span>
+    <span class="brand__name">Radar Cultural</span>
   </a>
 </template>
 
@@ -15,45 +15,63 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.72rem;
   color: var(--color-text);
-  font-size: 0.98rem;
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  font-weight: 680;
   letter-spacing: -0.01em;
   text-decoration: none;
 }
 
 .brand__mark {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.8rem;
+  height: 2.8rem;
   overflow: visible;
 }
 
-.brand__mark circle,
-.brand__mark path {
+.brand__arc {
   fill: none;
-  stroke: var(--color-turquoise);
-  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-width: 2.8;
 }
 
-.brand__mark path {
-  fill: color-mix(in srgb, var(--color-turquoise) 18%, transparent);
-  stroke: none;
+.brand__arc--outer,
+.brand__arc--inner {
+  stroke: var(--color-violet);
 }
 
-.brand__mark .brand__signal {
+.brand__arc--middle {
+  stroke: var(--color-jade);
+}
+
+.brand__needle {
+  fill: none;
+  stroke: var(--color-coral);
+  stroke-linecap: round;
+  stroke-width: 2.7;
+}
+
+.brand__mark .brand__core {
   fill: var(--color-coral);
   stroke: none;
 }
 
-.brand__mark .brand__core {
-  fill: var(--color-text);
-  stroke: none;
-}
-
 .brand:focus-visible {
-  outline: 2px solid var(--color-lime);
+  outline: 2px solid var(--color-violet);
   outline-offset: 0.45rem;
   border-radius: 0.2rem;
+}
+
+@media (max-width: 520px) {
+  .brand__mark {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .brand__name {
+    max-width: 7rem;
+    line-height: 0.95;
+  }
 }
 </style>

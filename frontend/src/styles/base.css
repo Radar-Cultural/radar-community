@@ -1,16 +1,32 @@
 :root {
   color-scheme: dark;
-  --color-bg: #061114;
-  --color-bg-deep: #040c0f;
-  --color-text: #f0ede4;
-  --color-muted: #c2c3bc;
-  --color-line: rgb(140 164 165 / 0.31);
-  --color-line-soft: rgb(140 164 165 / 0.1);
-  --color-coral: #ff785f;
-  --color-turquoise: #27d4ca;
-  --color-lime: #d9e85a;
+  --color-ink: #0d1321;
+  --color-wine: #611232;
+  --color-wine-accent: #8f2049;
+  --color-violet: #6d4aff;
+  --color-violet-soft: #a793ff;
+  --color-coral: #ff5b5b;
+  --color-jade: #19b39a;
+  --color-gold: #c9993e;
+  --color-bg: #101728;
+  --color-surface: #11192b;
+  --color-surface-muted: #182136;
+  --color-text: #f2f4f7;
+  --color-muted: #b8beca;
+  --color-line: rgb(211 219 232 / 0.14);
+  --color-line-strong: rgb(211 219 232 / 0.28);
+  --color-acrylic: rgb(20 29 48 / 0.58);
+  --color-acrylic-strong: rgb(25 35 57 / 0.82);
+  --font-display: Charter, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --font-sans: Inter, 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --header-height: 6.2rem;
+  --page-gutter: clamp(1.15rem, 4vw, 4rem);
+  --page-width: 96rem;
+  --shadow-md: 0 1.4rem 4rem rgb(0 0 0 / 0.2);
+  --shadow-lg: 0 2rem 6rem rgb(0 0 0 / 0.35);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -18,14 +34,33 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f2f4f7;
+  --color-surface: #fff;
+  --color-surface-muted: #e8ebf1;
+  --color-text: #0d1321;
+  --color-muted: #50596b;
+  --color-line: rgb(13 19 33 / 0.12);
+  --color-line-strong: rgb(13 19 33 / 0.24);
+  --color-acrylic: rgb(255 255 255 / 0.58);
+  --color-acrylic-strong: rgb(255 255 255 / 0.84);
+  --color-wine-accent: #76183c;
+  --shadow-md: 0 1.4rem 4rem rgb(13 19 33 / 0.11);
+  --shadow-lg: 0 2rem 6rem rgb(13 19 33 / 0.16);
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   min-width: 20rem;
-  background: var(--color-bg-deep);
+  background: var(--color-ink);
   scroll-behavior: smooth;
+  scroll-padding-top: 2rem;
 }
 
 body {
@@ -33,15 +68,19 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 83% 18%, rgb(21 73 77 / 0.16), transparent 24rem),
-    linear-gradient(155deg, var(--color-bg) 0%, var(--color-bg-deep) 100%);
+  background: var(--color-bg);
   color: var(--color-text);
+}
+
+body,
+button,
+a {
+  font: inherit;
 }
 
 button,
 a {
-  font: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 img,
@@ -49,17 +88,42 @@ svg {
   display: block;
 }
 
+::selection {
+  color: #fff;
+  background: var(--color-wine);
+}
+
+.page-width {
+  width: min(calc(100% - (var(--page-gutter) * 2)), var(--page-width));
+  margin-inline: auto;
+}
+
+.section-pad {
+  padding-block: clamp(6rem, 11vw, 11rem);
+}
+
+.section-dark {
+  color-scheme: dark;
+  --color-text: #f2f4f7;
+  --color-muted: #b8beca;
+  --color-line: rgb(211 219 232 / 0.14);
+  --color-line-strong: rgb(211 219 232 / 0.28);
+  --color-acrylic: rgb(20 29 48 / 0.58);
+  --color-acrylic-strong: rgb(25 35 57 / 0.82);
+}
+
 .skip-link {
   position: fixed;
-  z-index: 100;
+  z-index: 2000;
   top: 0.75rem;
   left: 0.75rem;
   padding: 0.75rem 1rem;
-  color: var(--color-bg);
-  background: var(--color-lime);
+  border-radius: 0.6rem;
+  color: #fff;
+  background: var(--color-violet);
   font-weight: 700;
   text-decoration: none;
-  transform: translateY(-150%);
+  transform: translateY(-160%);
   transition: transform 160ms ease;
 }
 
@@ -79,6 +143,26 @@ svg {
   border: 0 !important;
 }
 
+[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(2.5rem);
+}
+
+[data-revealed='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 720ms var(--ease-out),
+    transform 720ms var(--ease-out);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --header-height: 5.25rem;
+    --page-gutter: 1.15rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -91,5 +175,10 @@ svg {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  [data-reveal='pending'] {
+    opacity: 1;
+    transform: none;
   }
 }

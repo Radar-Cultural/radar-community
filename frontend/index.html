@@ -3,24 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#061114" />
+    <meta name="theme-color" content="#0d1321" />
     <meta
       name="description"
-      content="Radar Cultural conectará a las personas con eventos, experiencias y espacios culturales mediante difusión gratuita, datos abiertos y tecnología."
+      content="Radar Cultural construye un punto de encuentro para descubrir, compartir y preservar la vida cultural de México mediante difusión gratuita y datos abiertos."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_MX" />
     <meta property="og:site_name" content="Radar Cultural" />
-    <meta property="og:title" content="Radar Cultural — Próximamente" />
+    <meta property="og:title" content="Radar Cultural — La cultura entra en tu radar" />
     <meta
       property="og:description"
-      content="Una plataforma de difusión cultural gratuita, construida con datos abiertos y tecnología."
+      content="Un punto de encuentro para la vida cultural de México, construido con difusión gratuita, datos abiertos y tecnología responsable."
     />
     <meta property="og:url" content="https://radarcultural.mx/" />
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://radarcultural.mx/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Radar Cultural — Próximamente</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Radar Cultural",
+        "url": "https://radarcultural.mx/",
+        "description": "Plataforma mexicana en desarrollo para la difusión cultural gratuita y los datos abiertos."
+      }
+    </script>
+    <script>
+      ;(() => {
+        const saved = localStorage.getItem('radar-theme')
+        const theme =
+          saved === 'light' || saved === 'dark'
+            ? saved
+            : matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark'
+        document.documentElement.dataset.theme = theme
+        document.documentElement.style.colorScheme = theme
+      })()
+    </script>
+    <title>Radar Cultural — La cultura entra en tu radar</title>
   </head>
   <body>
     <div id="app"></div>
