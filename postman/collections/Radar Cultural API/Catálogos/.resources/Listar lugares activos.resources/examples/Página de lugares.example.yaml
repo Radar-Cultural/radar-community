@@ -1,0 +1,55 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/places/?page=8812&page_size=84&q=string"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    page: "8812"
+    page_size: "84"
+    q: string
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 2991,
+        "next": "http://BvpsIrqZEAQHlbGenASIjGuWbWAfewBOG.gnvHnQdEPgUTNjwLaMplmsqcQZ6OLskHRqjiSkL0ODI8.aF4ViR",
+        "previous": "https://XbwbmjBoUIQvwJvpLF.brhraUZXMUU76L",
+        "results": [
+          {
+            "id": "bdf5f66d-a1c4-0f93-5e04-a9119950b21e",
+            "name": "string",
+            "slug": "string",
+            "kind": "online",
+            "address": "string",
+            "locality": "string",
+            "region": "string",
+            "country_code": "st",
+            "latitude": "string",
+            "longitude": "string",
+            "same_as": "https://JhVcNomGnuCbFoJVcLAMPUCXVWjVcXA.oikfoM4+2t8Stny0sNEYi"
+          },
+          {
+            "id": "f0e80927-ee8d-efa7-aea0-1bc8cc5c8de4",
+            "name": "string",
+            "slug": "string",
+            "kind": "online",
+            "address": "string",
+            "locality": "string",
+            "region": "string",
+            "country_code": "st",
+            "latitude": "string",
+            "longitude": "string",
+            "same_as": "http://fkXdzgCNT.qwuA5VsOyb5+NUSsF8F01oIcHENRssjKR,k6bPYoOcyivey6-NayxEHNp"
+          }
+        ]
+      }
+order: 1000

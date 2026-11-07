@@ -1,0 +1,23 @@
+$kind: http-request
+description: ''
+url: '{{baseUrl}}/audiences/?page=1&page_size=20'
+method: GET
+headers:
+  Accept: application/json
+settings: {}
+examples: ./.resources/Listar públicos objetivo activos.resources/examples
+order: 2000
+queryParams:
+  - key: page
+    value: '1'
+  - key: page_size
+    value: '20'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('mantiene la envoltura paginada', () => {
+        const body = pm.response.json();
+        pm.expect(body).to.have.all.keys('count', 'next', 'previous', 'results');
+        pm.expect(body.results).to.be.an('array');
+      });

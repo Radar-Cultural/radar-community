@@ -1,0 +1,6 @@
+workflows:
+  syncSpecToCollection:
+    - spec: ../backend/openapi.yaml
+      collection: ../postman/collections/Radar Cultural API
+      options:
+        folderStrategy: Tags

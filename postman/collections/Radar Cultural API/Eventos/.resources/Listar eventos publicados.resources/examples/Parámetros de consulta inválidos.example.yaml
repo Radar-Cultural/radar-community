@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/events/?page=8812&page_size=84&q=string&category=string&audience=string&place=e6387313-148b-1cbc-2fde-8732ad32cfa3&from=1957-08-10T08:35:45.632Z&to=1957-08-10T08:35:45.632Z"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    page: "8812"
+    page_size: "84"
+    q: string
+    category: string
+    audience: string
+    place: e6387313-148b-1cbc-2fde-8732ad32cfa3
+    from: 1957-08-10T08:35:45.632Z
+    to: 1957-08-10T08:35:45.632Z
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "detail": "string"
+      }
+order: 2000

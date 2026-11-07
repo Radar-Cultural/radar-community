@@ -1,0 +1,103 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/events/:slug/"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: slug
+      value: string
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "id": "347633f0-f4a4-f5ce-250a-75f757ba7260",
+        "slug": "string",
+        "title": "string",
+        "summary": "string",
+        "description": "string",
+        "starts_at": "1981-09-09T15:34:55.752Z",
+        "event_status": "EventPostponed",
+        "attendance_mode": "OfflineEventAttendanceMode",
+        "admission_type": "free",
+        "categories": [
+          {
+            "id": "a7769f65-9323-cf74-02ec-4a79abd4b5d6",
+            "name": "string",
+            "slug": "string",
+            "description": "string"
+          },
+          {
+            "id": "e6a31e39-4e5f-a8f5-5e43-e845e8657e77",
+            "name": "string",
+            "slug": "string",
+            "description": "string"
+          }
+        ],
+        "audiences": [
+          {
+            "id": "ae27a277-d02f-c564-a5ea-4f6a4b036763",
+            "name": "string",
+            "slug": "string",
+            "description": "string"
+          },
+          {
+            "id": "2ba9d707-eb2d-581d-679c-2dd27b8b7a11",
+            "name": "string",
+            "slug": "string",
+            "description": "string"
+          }
+        ],
+        "schedule": [
+          {
+            "title": "string",
+            "starts_at": "1991-10-13T06:40:08.305Z",
+            "position": 433,
+            "ends_at": "1961-08-14T04:09:29.863Z"
+          },
+          {
+            "title": "string",
+            "starts_at": "1996-04-11T01:25:03.266Z",
+            "position": 9888,
+            "ends_at": "1990-05-19T12:31:17.838Z"
+          }
+        ],
+        "source_url": "http://KAiYjqlWzZ.cllA8T",
+        "updated_at": "1966-07-08T06:03:48.371Z",
+        "ends_at": "1953-06-14T19:50:47.076Z",
+        "place": {
+          "id": "0a60234c-2d90-cdf9-3890-86bf8af0af48",
+          "name": "string",
+          "slug": "string",
+          "kind": "venue",
+          "address": "string",
+          "locality": "string",
+          "region": "string",
+          "country_code": "st",
+          "latitude": "string",
+          "longitude": "string",
+          "same_as": "https://wlNCqwOR.iewrSc,MFkwryj-FGjQen5VnUG,"
+        },
+        "online_url": "http://dAqgpYIeZALUlifoZIbPQsOl.cihGSv70a4YeazpLxDRuq7fDbifzMIdz0Sfr,-vRvf1w",
+        "organizer": {
+          "name": "string",
+          "slug": "string",
+          "website": "http://rzcXUpPmrDSdMQuCkmOKdEhFKccq.ykvtJ2SoFyZ.h8LeHAgV7YZ,8VWwdTp",
+          "verified": true,
+          "same_as": [
+            "http://ebOrtAAazrWPIJpgJNegXpjSIXsAFz.zvatbNRL3ZaYN9POYVFLS3",
+            "http://scujKJTL.lkdeHP8A+l2JZLM7pEPeJMcSfyD.If0tpo0svy"
+          ]
+        }
+      }
+order: 1000

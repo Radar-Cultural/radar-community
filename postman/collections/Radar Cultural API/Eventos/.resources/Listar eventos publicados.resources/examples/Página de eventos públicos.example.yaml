@@ -1,0 +1,226 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/events/?page=8812&page_size=84&q=string&category=string&audience=string&place=e6387313-148b-1cbc-2fde-8732ad32cfa3&from=1957-08-10T08:35:45.632Z&to=1957-08-10T08:35:45.632Z"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    page: "8812"
+    page_size: "84"
+    q: string
+    category: string
+    audience: string
+    place: e6387313-148b-1cbc-2fde-8732ad32cfa3
+    from: 1957-08-10T08:35:45.632Z
+    to: 1957-08-10T08:35:45.632Z
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 6914,
+        "next": "https://A.sqxA3,Pg18+vSIiNplR7Fb3",
+        "previous": "https://AjRxEsvWgepLAndCVGfXKZvN.iueO3WwSZFEwPw4szVC9ecRXGTQFF9jahtb-Z1Oo6VKO6y5f7y0--Rth,eqY.J+gTj",
+        "results": [
+          {
+            "id": "dd3c7d6d-0965-f9c8-a0f3-0f6c40135e16",
+            "slug": "string",
+            "title": "string",
+            "summary": "string",
+            "description": "string",
+            "starts_at": "1948-10-17T05:45:06.740Z",
+            "event_status": "EventPostponed",
+            "attendance_mode": "MixedEventAttendanceMode",
+            "admission_type": "paid",
+            "categories": [
+              {
+                "id": "8edca850-2ec8-ecc7-4b3d-5443edc675ca",
+                "name": "string",
+                "slug": "string",
+                "description": "string"
+              },
+              {
+                "id": "256efc3d-3496-2d45-a1d1-9bdb3a450bd7",
+                "name": "string",
+                "slug": "string",
+                "description": "string"
+              }
+            ],
+            "audiences": [
+              {
+                "id": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "name": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "slug": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "description": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                }
+              },
+              {
+                "id": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "name": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "slug": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "description": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                }
+              }
+            ],
+            "schedule": [
+              {
+                "title": "string",
+                "starts_at": "1989-09-09T23:50:39.646Z",
+                "position": 6742,
+                "ends_at": "1960-04-25T10:03:56.990Z"
+              },
+              {
+                "title": "string",
+                "starts_at": "2019-07-07T10:55:07.698Z",
+                "position": 6018,
+                "ends_at": "1957-04-18T18:51:38.615Z"
+              }
+            ],
+            "source_url": "https://jmwqHFnuSWWXHktGWjhej.ccCbkGwxHXAKPXNTgM4KmUmuO13i4ZNg8kbT.FLNo.Ah",
+            "updated_at": "1965-04-02T14:06:11.996Z",
+            "ends_at": "2012-11-03T05:30:12.335Z",
+            "place": {
+              "id": "4adea457-0179-8e33-dc28-d4573efb42e8",
+              "name": "string",
+              "slug": "string",
+              "kind": "venue",
+              "address": "string",
+              "locality": "string",
+              "region": "string",
+              "country_code": "st",
+              "latitude": "string",
+              "longitude": "string",
+              "same_as": "https://lNRwKcOuFrxONuLqbovUREG.lszacU3wAdfJGYW.tcuH+hnX5BmvSrCQwScqxIT9yUD"
+            },
+            "online_url": "https://FaoCggfFzXIInVTqk.farQr3D3",
+            "organizer": {
+              "name": "string",
+              "slug": "string",
+              "website": "https://Id.lzOo,UR9p3prsJu+TOmotG6,7MosCn6X",
+              "verified": true,
+              "same_as": [
+                "http://tdXOrTtHgFMuSLJHPFVRSySal.szgmgpmAGvGJ3a2872DsGyiYtTOtHPZruqDvgs410p+,bciMlJjH+axZBvUhyDWkBLb9jw6kRz1bk",
+                "http://nWewMh.hyuDPt,zMNL8U+KeCULy.p8OvWVXR54MzJcEwxVY"
+              ]
+            }
+          },
+          {
+            "id": "a9d4f730-b826-9168-e0f9-7bf63b381276",
+            "slug": "string",
+            "title": "string",
+            "summary": "string",
+            "description": "string",
+            "starts_at": "1959-09-15T21:44:20.191Z",
+            "event_status": "EventScheduled",
+            "attendance_mode": "OfflineEventAttendanceMode",
+            "admission_type": "paid",
+            "categories": [
+              {
+                "id": "e038749e-b007-609f-8181-aac4d99aa10d",
+                "name": "string",
+                "slug": "string",
+                "description": "string"
+              },
+              {
+                "id": "9977cb5a-7ae2-e47e-eeee-ac3ed83d7423",
+                "name": "string",
+                "slug": "string",
+                "description": "string"
+              }
+            ],
+            "audiences": [
+              {
+                "id": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "name": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "slug": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "description": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                }
+              },
+              {
+                "id": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "name": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "slug": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                },
+                "description": {
+                  "value": "<Error: Too many levels of nesting to fake this schema>"
+                }
+              }
+            ],
+            "schedule": [
+              {
+                "title": "string",
+                "starts_at": "1989-09-03T13:32:42.291Z",
+                "position": 2086,
+                "ends_at": "2015-06-09T22:34:53.263Z"
+              },
+              {
+                "title": "string",
+                "starts_at": "2001-03-19T09:03:16.441Z",
+                "position": 9051,
+                "ends_at": "1977-12-26T23:05:34.390Z"
+              }
+            ],
+            "source_url": "http://MhqalCxytPcPD.fknRL36a2DKcR4DJHi9La9w1KXLlyePY,ANU2WVx5pA",
+            "updated_at": "2000-11-16T23:58:26.704Z",
+            "ends_at": "2018-09-19T07:02:30.980Z",
+            "place": {
+              "id": "9a89d383-5dc8-013f-9f1c-a91b2035051b",
+              "name": "string",
+              "slug": "string",
+              "kind": "outdoor",
+              "address": "string",
+              "locality": "string",
+              "region": "string",
+              "country_code": "st",
+              "latitude": "string",
+              "longitude": "string",
+              "same_as": "https://SdEBpi.xxlm3QzlUaL"
+            },
+            "online_url": "http://BbU.bjrpn1EsmXypVBQkafqQDqna85ZWUXKSi7J57n4d-o8LyXPReqhsUSHP0tgykXCL,0RXEIn",
+            "organizer": {
+              "name": "string",
+              "slug": "string",
+              "website": "https://JdpXFoXHdArcKKG.tdzcPMZs",
+              "verified": true,
+              "same_as": [
+                "http://yDPgwbdyzENaRwEkMHAjENvDyfDziXcrQ.jrhfszPgmwZXKC",
+                "http://lPtEXYVLzPFkODgbGDgXawvgpXBfsW.dffjPwv.kiWQPeuMiTT2RTCCMDbyoGmOpIH1l4Hlp1nm-lEG3RMx4r6W.PAuFeDuTCW"
+              ]
+            }
+          }
+        ]
+      }
+order: 1000

@@ -1,0 +1,40 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/audiences/?page=8812&page_size=84"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    page: "8812"
+    page_size: "84"
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 1807,
+        "next": "http://qn.rswAN3VJyW",
+        "previous": "https://xtXNxJnUFWSqLLAewwKiTxXc.rzspKduTj8xOF2TZL-flmCG6IA+Hq7sT",
+        "results": [
+          {
+            "id": "5b184aa6-bf6d-a271-8a8b-60b1590c142e",
+            "name": "string",
+            "slug": "string",
+            "description": "string"
+          },
+          {
+            "id": "1507b4d4-0abd-941e-a3b7-b760a29a7520",
+            "name": "string",
+            "slug": "string",
+            "description": "string"
+          }
+        ]
+      }
+order: 1000

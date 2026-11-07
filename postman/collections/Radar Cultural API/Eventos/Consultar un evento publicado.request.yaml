@@ -1,0 +1,16 @@
+$kind: http-request
+description: ''
+url: '{{baseUrl}}/events/evento-de-prueba/'
+method: GET
+headers:
+  Accept: application/json
+settings: {}
+examples: ./.resources/Consultar un evento publicado.resources/examples
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('devuelve el evento publicado solicitado', () => {
+        pm.expect(pm.response.json().slug).to.eql('evento-de-prueba');
+      });
