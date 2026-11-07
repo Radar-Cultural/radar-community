@@ -1,6 +1,12 @@
 # Desarrollo
 
-## Preparación
+## Requisitos
+
+- Node.js 22 o posterior y pnpm 11.
+- Python 3.11–3.14.
+- PostgreSQL para pruebas de integración previas al despliegue; SQLite basta para el ciclo local inicial.
+
+## Frontend
 
 ```bash
 cd frontend
@@ -8,36 +14,43 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-La versión de Node y pnpm debe respetar `frontend/package.json`. No uses `npm install` ni regeneres el lockfile con otro gestor.
+El servidor queda normalmente en `http://127.0.0.1:5173`. `API_PROXY_TARGET` permite cambiar el backend local sin exponer la variable al bundle.
 
-## Calidad local
-
-Antes de abrir un pull request:
+## Backend
 
 ```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm build
-test -f dist/index.html
+cd backend
+python -m venv .venv
+.venv/bin/python -m pip install --requirement requirements-dev.txt
+cp .env.example .env
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py runserver 127.0.0.1:8000
 ```
 
-Si se incorporan pruebas, el script `test` debe ejecutarlas de forma no interactiva y CI lo ejecutará automáticamente.
+La configuración falla de forma explícita en producción si faltan `DJANGO_SECRET_KEY` o `DATABASE_URL`. Nunca reutilices el secreto de desarrollo.
 
-## Convenciones
+## Calidad
 
-- Composition API con `<script setup lang="ts">`.
-- Componentes pequeños y semánticos dentro de `src/components/`.
-- Tokens visuales globales en `src/styles/`.
-- Recursos procesados por Vite dentro de `src/assets/`.
-- Recursos públicos sin transformación dentro de `public/`.
-- Cero secretos y cero rutas personales en el repositorio.
+```bash
+cd frontend
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm build
 
-## Accesibilidad y responsive
+cd ../backend
+.venv/bin/ruff format --check .
+.venv/bin/ruff check .
+DEBUG=True .venv/bin/python manage.py check
+DEBUG=True .venv/bin/python manage.py makemigrations --check --dry-run
+DEBUG=True .venv/bin/python manage.py test
+```
 
-- La navegación completa debe funcionar con teclado.
-- Todo contenido gráfico necesita alternativa textual apropiada.
-- El movimiento debe desactivarse con `prefers-reduced-motion`.
-- Comprueba como mínimo 1440×900, 768×1024 y 390×844.
-- Revisa que no existan desbordamientos, texto cortado ni pérdida de contraste.
+## Modelos y migraciones
 
+1. Modifica el modelo y sus pruebas.
+2. Ejecuta `manage.py makemigrations <app>`.
+3. Lee la migración; no la aceptes sólo porque fue generada.
+4. Prueba desde cero y con datos heredados cuando altere unicidad, nulabilidad o índices.
+5. No uses `--fake`, borres filas ni elimines índices sin diagnóstico del esquema real.
+
+## API
+
+El flujo para cambios es contrato → pruebas → implementación. Los errores, paginación y permisos forman parte del contrato. Ejecuta `postman status` al terminar trabajo de API cuando exista la colección local.

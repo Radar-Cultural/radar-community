@@ -26,3 +26,19 @@ updates:
       - "type: enhancement"
       - "area: devops"
 
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "12:30"
+      timezone: America/Mexico_City
+    open-pull-requests-limit: 5
+    labels:
+      - "type: enhancement"
+      - "area: backend"
+    groups:
+      backend-minor-patch:
+        update-types:
+          - minor
+          - patch

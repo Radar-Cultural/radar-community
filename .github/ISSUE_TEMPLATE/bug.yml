@@ -13,6 +13,20 @@ body:
       description: ¿Qué ocurrió y qué esperabas que ocurriera?
     validations:
       required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área afectada
+      options:
+        - Frontend
+        - Backend
+        - API
+        - Datos o migraciones
+        - Accesibilidad
+        - DevOps
+        - Documentación
+    validations:
+      required: true
   - type: textarea
     id: steps
     attributes:
@@ -32,4 +46,10 @@ body:
     attributes:
       label: Evidencia adicional
       description: Capturas o mensajes de consola sin datos sensibles.
-
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Seguridad y privacidad
+      options:
+        - label: Confirmo que no es una vulnerabilidad y que la evidencia no contiene secretos ni datos personales.
+          required: true

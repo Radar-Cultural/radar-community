@@ -1,43 +1,54 @@
 # Contribuir a Radar Community
 
-Gracias por tu interés en Radar Cultural. En esta etapa aceptamos propuestas que mantengan el alcance de la landing y preparen una base clara para el trabajo comunitario posterior.
+Gracias por colaborar con Radar Cultural. Antes de escribir código, revisa el alcance, las issues abiertas y la política de seguridad.
 
 ## Antes de comenzar
 
-1. Revisa los issues existentes y evita duplicar propuestas.
-2. Para cambios importantes, abre primero un feature request.
-3. No publiques vulnerabilidades en un issue; sigue [SECURITY.md](SECURITY.md).
-4. No incluyas secretos, datos personales, contenido sin autorización ni dependencias innecesarias.
+1. Busca una issue existente. Para cambios funcionales, abre o solicita una antes del PR.
+2. Usa el formulario adecuado y selecciona el área afectada.
+3. Para API o modelos, describe permisos, compatibilidad, migración y datos expuestos.
+4. No publiques vulnerabilidades: utiliza [Security Advisories](https://github.com/Radar-Cultural/radar-community/security/advisories/new).
+5. No incluyas secretos, datos personales, eventos ficticios ni contenido sin fuente y autorización.
 
-## Flujo de trabajo
+## Ramas, commits y PR
 
-1. Crea una rama corta desde `main`, por ejemplo `feat/nueva-seccion`.
-2. Instala las dependencias dentro de `frontend/` con `pnpm install --frozen-lockfile`.
-3. Realiza cambios pequeños y enfocados.
-4. Ejecuta `pnpm format:check`, `pnpm lint`, `pnpm typecheck` y `pnpm build`.
-5. Abre un pull request usando la plantilla del repositorio.
+- Crea una rama corta desde `main`: `feat/api-events`, `fix/mobile-header`.
+- Mantén un cambio enfocado por PR.
+- Usa títulos `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:` o `ci:`.
+- Vincula la issue con `Closes #...`.
+- Adjunta capturas de escritorio y móvil para cambios visuales.
+- El merge preferido es squash después de CI y revisión de CODEOWNERS.
 
-Los títulos de pull requests y commits principales siguen esta convención:
+## Frontend
 
-- `feat:` funcionalidad nueva.
-- `fix:` corrección de un defecto.
-- `docs:` documentación.
-- `chore:` mantenimiento.
-- `refactor:` cambio interno sin alterar el comportamiento.
-- `test:` pruebas.
-- `ci:` integración continua.
+```bash
+cd frontend
+pnpm install --frozen-lockfile
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm build
+```
 
-## Interfaz y accesibilidad
+Comprueba teclado, foco, contraste, zoom, movimiento reducido y viewports de 1440×900, 768×1024 y 390×844. Conserva la identidad descrita en `docs/design-system.md`.
 
-- Conserva HTML semántico, contraste suficiente y navegación por teclado.
-- Respeta `prefers-reduced-motion`.
-- Comprueba como mínimo un viewport móvil y uno de escritorio.
-- Adjunta capturas cuando el cambio sea visual.
-- No agregues formularios, APIs o estados que simulen servicios inexistentes.
+## Backend
 
-## Revisión
+```bash
+cd backend
+python -m venv .venv
+.venv/bin/python -m pip install --requirement requirements-dev.txt
+.venv/bin/ruff format --check .
+.venv/bin/ruff check .
+DEBUG=True .venv/bin/python manage.py check
+DEBUG=True .venv/bin/python manage.py makemigrations --check --dry-run
+DEBUG=True .venv/bin/python manage.py test
+```
 
-La revisión técnica cubre `frontend/`, workflows y configuración del repositorio. Cuando el equipo de GitHub `desarrollo-tecnico` esté activo y tenga acceso, se utilizará como propietario de estas rutas.
+Cambios de API modifican primero `backend/openapi.yaml`. Cambios de modelos incluyen una migración revisada. No abras operaciones de escritura ni relajes permisos, CSRF, CORS o filtros de publicación sin una decisión documentada.
 
-Al contribuir aceptas cumplir el [Código de Conducta](CODE_OF_CONDUCT.md). La aceptación de una contribución no modifica el estado provisional de la licencia.
+## Asistencia con IA
 
+Lee `AGENTS.md` antes de usar una herramienta de IA. En el PR indica qué partes se generaron o revisaron con asistencia, qué verificaste manualmente y qué permanece sin validar. La persona autora sigue siendo responsable del cambio.
+
+Al contribuir aceptas el [Código de Conducta](CODE_OF_CONDUCT.md). La aceptación de una contribución no modifica el estado provisional de la licencia.

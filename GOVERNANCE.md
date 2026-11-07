@@ -6,8 +6,8 @@ Radar Community se desarrolla bajo la coordinación de Radar Cultural. Las decis
 
 ### Desarrollo técnico
 
-- Arquitectura, frontend, backend futuro, calidad, seguridad y DevOps.
-- Revisión de `frontend/`, `.github/workflows/` y configuración técnica.
+- Arquitectura, frontend, backend, API, datos, calidad, seguridad y DevOps.
+- Revisión de `frontend/`, `backend/`, `.github/workflows/` y configuración técnica.
 - Recomendación técnica antes de cada release.
 
 ### Mercadotecnia
@@ -31,4 +31,3 @@ Radar Community se desarrolla bajo la coordinación de Radar Cultural. Las decis
 ## Equipos de GitHub
 
 Los equipos previstos son `desarrollo-tecnico`, `mercadotecnia` y `coordinacion-general`. Sus permisos mínimos objetivo sobre este repositorio son Maintain, Triage y Triage, respectivamente. `CODEOWNERS` solo podrá apuntar a equipos que existan y tengan acceso real al repositorio.
-

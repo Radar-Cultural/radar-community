@@ -10,6 +10,21 @@ body:
       description: Describe la necesidad antes de proponer la solución.
     validations:
       required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área principal
+      options:
+        - Frontend
+        - Backend
+        - API
+        - Datos abiertos
+        - UI/UX
+        - Accesibilidad
+        - DevOps
+        - Comunidad
+    validations:
+      required: true
   - type: textarea
     id: proposal
     attributes:
@@ -26,8 +41,9 @@ body:
     attributes:
       label: Alcance
       options:
-        - label: La propuesta no depende de una API o backend que todavía no existe.
+        - label: La propuesta distingue comportamiento público, administración y permisos.
           required: true
         - label: No incluye fechas, alianzas, métricas ni datos no verificados.
           required: true
-
+        - label: Si cambia la API o datos, contempla contrato, migración y pruebas.
+          required: true

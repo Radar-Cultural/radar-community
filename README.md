@@ -1,31 +1,27 @@
 # Radar Community
 
-Radar Cultural es una iniciativa mexicana que busca conectar a las personas con eventos, experiencias y espacios culturales. La plataforma pública estará orientada a la difusión cultural gratuita y al uso de datos abiertos, estructurados e interoperables, con una evolución prevista hacia Schema.org.
+Radar Cultural es una iniciativa mexicana para descubrir, compartir y preservar la vida cultural mediante difusión gratuita, datos abiertos y tecnología responsable.
 
-Este repositorio contiene **Radar Community**, la edición comunitaria y colaborativa de la plataforma. **Radar Institutional** será un producto comercial separado para organizaciones que necesiten agendas personalizadas, integraciones, analítica y administración avanzada.
+Este repositorio contiene **Radar Community**, la edición colaborativa. **Radar Institutional** es un producto separado para organizaciones con necesidades comerciales de agendas, integraciones y analítica.
 
-## Estado del proyecto
+## Estado
 
-`v0.1.0` prepara la primera presencia web de Radar Cultural: una landing estática de “Próximamente”. El sistema de gestión de eventos, la API y el backend todavía no forman parte de esta versión.
+- `v0.1.0`: landing “Próximamente”, publicada.
+- `v0.2.0` en desarrollo: nueva identidad de la landing y primera API de lectura pública.
+- La API y el backend todavía no están desplegados en producción.
 
-## Tecnologías
+No se mantienen eventos ficticios, fechas de lanzamiento, cifras, alianzas ni formularios simulados.
 
-- Vue 3 con Composition API.
-- Vite y TypeScript.
-- pnpm.
-- GitHub Actions para calidad y compilación.
-- Vercel para publicar únicamente `frontend/`.
+## Stack
 
-El backend futuro se construirá con Python, Django, Django REST Framework y PostgreSQL, y se desplegará en infraestructura Linux propia. No existe un backend dentro de este repositorio en la versión actual.
+- Frontend: Vue 3, Vite, TypeScript y pnpm.
+- Backend: Python, Django 5.2, Django REST Framework y PostgreSQL.
+- Producción actual: Nginx y Cloudflare Tunnel; Gunicorn se incorporará cuando se autorice el backend.
+- Calidad: GitHub Actions, Ruff, ESLint, Vue TypeScript y pruebas de Django.
 
-## Desarrollo local
+## Desarrollo rápido
 
-### Requisitos
-
-- Node.js 22.12 o posterior.
-- pnpm 11 o posterior.
-
-### Instalación
+Frontend:
 
 ```bash
 cd frontend
@@ -33,38 +29,42 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-La aplicación estará disponible en la URL indicada por Vite, normalmente `http://localhost:5173`.
-
-### Comandos
+Backend:
 
 ```bash
-pnpm dev          # servidor local
-pnpm lint         # análisis estático
-pnpm typecheck    # comprobación de TypeScript y Vue
-pnpm format:check # validación de formato
-pnpm build        # validación de tipos y compilación a dist/
-pnpm preview      # vista previa del build
+cd backend
+python -m venv .venv
+.venv/bin/python -m pip install --requirement requirements-dev.txt
+cp .env.example .env
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py runserver
 ```
+
+Vite envía `/api` a `http://127.0.0.1:8000` durante el desarrollo, de forma que no se necesita CORS abierto.
 
 ## Estructura
 
 ```text
-frontend/  Aplicación Vue y recursos públicos
-docs/      Arquitectura, desarrollo, despliegue y releases
-.github/   CI, Dependabot y plantillas de colaboración
+frontend/          Landing y futura aplicación Vue
+backend/           Django, DRF, modelos, migraciones y OpenAPI
+postman/           Colección local generada desde el contrato y sus aserciones
+docs/              Arquitectura, desarrollo, API y despliegue
+.github/           CI, plantillas y automatización de dependencias
+AGENTS.md          Contexto seguro para contribuciones asistidas por IA
 ```
 
-`backend/` se incorporará cuando exista una implementación real. No se mantiene una carpeta vacía ni una API simulada.
+## Documentación
 
-## Contribuir
+- [Arquitectura](docs/architecture.md)
+- [Backend y seguridad](docs/backend.md)
+- [Contrato de API](docs/api.md)
+- [Desarrollo](docs/development.md)
+- [Despliegue](docs/deployment.md)
+- [Sistema visual](docs/design-system.md)
+- [Trabajo pendiente](docs/roadmap.md)
+- [Contribuir](CONTRIBUTING.md)
+- [Seguridad](SECURITY.md)
 
-Consulta [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir una propuesta. Los cambios se realizan en ramas de trabajo, pasan por pull request y usan títulos basados en Conventional Commits.
+## Licencia
 
-## Versiones
-
-El proyecto sigue [Semantic Versioning](https://semver.org/) y mantiene sus cambios en [CHANGELOG.md](CHANGELOG.md). El flujo completo se documenta en [docs/releases.md](docs/releases.md).
-
-## Licenciamiento
-
-La licencia definitiva de Radar Community está en evaluación. El archivo [LICENSE](LICENSE) es un aviso provisional y **no concede automáticamente permisos de uso, modificación, distribución o explotación comercial**. Este proyecto no debe describirse todavía como software open source.
-
+La licencia definitiva de Radar Community continúa en evaluación. El archivo [LICENSE](LICENSE) es un aviso provisional y no concede automáticamente permisos de uso, modificación, distribución o explotación comercial. El proyecto no debe presentarse todavía como open source aprobado.

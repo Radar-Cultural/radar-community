@@ -6,6 +6,8 @@
 
 Closes #
 
+<!-- Los cambios funcionales deben tener una issue. Usa "N/A: explicación" sólo para mantenimiento trivial. -->
+
 ## Tipo de modificación
 
 - [ ] `feat`: funcionalidad
@@ -20,6 +22,12 @@ Closes #
 
 <!-- Incluye comandos, viewports y resultados. -->
 
+## Contrato y datos
+
+- [ ] No cambia la API ni el esquema de datos.
+- [ ] Si cambia la API, actualicé `backend/openapi.yaml` y sus pruebas.
+- [ ] Si cambia un modelo, incluí y probé la migración con datos existentes cuando aplica.
+
 ## Evidencia visual
 
 <!-- Adjunta capturas antes/después cuando corresponda. -->
@@ -31,5 +39,5 @@ Closes #
 - [ ] Probé los viewports relevantes o documenté los pendientes.
 - [ ] Actualicé la documentación necesaria.
 - [ ] No incluí secretos, credenciales ni datos personales.
+- [ ] No relajé permisos, CSRF, CORS, throttling ni filtros de publicación sin una decisión documentada.
 - [ ] El título sigue Conventional Commits.
-

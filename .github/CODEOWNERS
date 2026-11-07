@@ -1,5 +1,10 @@
 # Revisión técnica por el equipo responsable de desarrollo.
 /frontend/ @Radar-Cultural/desarrollo-tecnico
+/backend/ @Radar-Cultural/desarrollo-tecnico
+/postman/ @Radar-Cultural/desarrollo-tecnico
+/.postman/ @Radar-Cultural/desarrollo-tecnico
+/AGENTS.md @Radar-Cultural/desarrollo-tecnico
+/docs/ @Radar-Cultural/desarrollo-tecnico
 /.github/workflows/ @Radar-Cultural/desarrollo-tecnico
 /.github/dependabot.yml @Radar-Cultural/desarrollo-tecnico
 /.editorconfig @Radar-Cultural/desarrollo-tecnico

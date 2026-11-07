@@ -1,32 +1,41 @@
 # Arquitectura
 
-## Alcance actual
-
-La versión `v0.1.0` es una aplicación estática ubicada en `frontend/`. Vue compone la interfaz, Vite gestiona el entorno de desarrollo y genera `frontend/dist`, y TypeScript aporta validación estática.
+## Visión general
 
 ```text
-Navegador → frontend estático en Vercel
+Navegador
+  ├─ /                → Nginx → build Vue
+  └─ /api/v1/         → Nginx → Gunicorn → Django REST Framework → PostgreSQL
+                                  └─ /admin/ protegido por sesión y CSRF
+
+Internet → Cloudflare → túnel dedicado → Nginx local
 ```
 
-No existe una API, base de datos, autenticación ni servicio de eventos en esta etapa. La landing no simula solicitudes a servicios inexistentes.
+El frontend y la API comparten origen público. En desarrollo, Vite usa un proxy local para `/api`; no se habilita CORS comodín.
 
-## Evolución prevista
+## Frontend
 
-Cuando exista trabajo funcional real se agregará `backend/` con Python, Django, Django REST Framework y PostgreSQL. Ese backend tendrá un ciclo de despliegue independiente en infraestructura Linux propia con Nginx y Gunicorn.
+Vue compone una landing accesible con tema claro/oscuro, movimiento reducido, componentes semánticos y recursos optimizados por Vite. El frontend no contiene secretos ni simula llamadas a servicios inexistentes.
 
-```text
-Navegador → frontend
-                ↓ API futura
-        Django REST Framework → PostgreSQL
-```
+## Backend
 
-La interfaz entre frontend y backend deberá documentarse antes de implementarse. Los datos de eventos se modelarán para facilitar su interoperabilidad con Schema.org, sin publicar datos estructurados de eventos que todavía no existan.
+Django conserva por separado:
 
-## Límites
+- estado cultural de un evento (`EventScheduled`, cancelado, pospuesto o reprogramado);
+- estado editorial (`draft`, revisión, publicado o archivado);
+- visibilidad de moderación (público, oculto o retirado).
 
-- Vercel publica únicamente `frontend/`.
-- La documentación y la configuración del repositorio no forman parte del artefacto web.
-- Los secretos nunca se incorporan al bundle de Vite.
-- Toda variable prefijada con `VITE_` es pública para el navegador y debe tratarse como tal.
-- Radar Community y Radar Institutional comparten misión, pero no deben mezclar código o capacidades comerciales sin una decisión de arquitectura.
+Esta separación evita publicar un borrador o confundir cancelación con retirada. Los eventos públicos requieren fuente verificable y sólo salen de `Event.objects.public()`.
 
+Los catálogos normalizan lugares y alias con identidad estable. Organización, evento y lugar tienen UUID; los slugs son rutas legibles, no identificadores internos.
+
+## Contrato
+
+`backend/openapi.yaml` es la fuente autoritativa. La implementación, las pruebas y la colección Postman deben derivarse o contrastarse contra ese archivo. Los cambios incompatibles requieren versión nueva.
+
+## Límites actuales
+
+- No existe escritura pública ni autenticación de clientes externos.
+- Django Admin es la única superficie inicial de gestión.
+- No se implementan recordatorios, calendario, notificaciones, tickets ni analítica.
+- No se despliega el backend hasta preparar PostgreSQL, servicio Gunicorn, proxy Nginx, variables y respaldo.

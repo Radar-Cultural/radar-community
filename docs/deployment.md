@@ -1,48 +1,90 @@
 # Despliegue
 
-## Flujo GitHub → Vercel
+## Estado real
 
-La integración oficial de Vercel observa el repositorio de GitHub. La configuración objetivo es:
+La producción actual publica únicamente el frontend:
 
-| Campo | Valor |
-|---|---|
-| Project Name | `radar-community` |
-| Framework Preset | Vite |
-| Root Directory | `frontend` |
-| Package Manager | pnpm |
-| Install Command | `pnpm install --frozen-lockfile` |
-| Build Command | `pnpm build` |
-| Output Directory | `dist` |
-| Production Branch | `main` |
+```text
+Cloudflare Tunnel dedicado → Nginx 127.0.0.1:8093 → /var/www/radarcultural.mx/current
+```
 
-Un pull request crea un Preview Deployment. Un push aceptado a `main` crea un Production Deployment. No existe un segundo pipeline por tags: GitHub Releases documenta versiones y Vercel publica desde `main`.
+`current` es un enlace simbólico a un directorio inmutable bajo `releases/<commit>`. Cambiar el enlace hace atómica la publicación del frontend. El backend todavía no está desplegado y no existe un servicio Gunicorn de Radar Community.
 
-## Verificación de una publicación
+## Actualizar el checkout
 
-1. Confirma que CI terminó correctamente para el commit.
-2. Abre el deployment asociado a ese mismo SHA en Vercel.
-3. Comprueba que el estado sea `Ready` y que el build use `frontend/`.
-4. Abre la URL y valida título, contenido, consola, assets y responsive.
-5. Comprueba el estado de Vercel dentro del commit o pull request de GitHub.
-6. En producción, verifica también `https://radarcultural.mx` y el comportamiento de `www`.
+En el servidor, dentro del checkout de Radar Community:
 
-Un build local o un estado `Ready` no sustituye la comprobación de la URL publicada.
+```bash
+git status --short
+git fetch origin main
+git merge --ff-only origin/main
+```
 
-## Volver a una versión anterior
+El árbol debe estar limpio antes de actualizar. Si `git status` muestra cambios, detén el despliegue e identifica su propietario. No uses `git reset --hard`, `git clean -fd` ni sobrescribas trabajo del servidor.
 
-Desde Vercel, localiza un deployment de producción previamente verificado y usa **Promote to Production**. Esto reasigna los dominios al artefacto existente y evita reconstruir un commit distinto. Después verifica la URL pública y registra la razón del rollback.
+`git merge --ff-only origin/main` y `git pull --ff-only origin main` son equivalentes para este flujo; se prefiere separar `fetch` y `merge` para poder inspeccionar el commit antes de aplicarlo.
 
-No reescribas tags publicados para representar un rollback. Si el código necesita una corrección, crea una nueva versión, por ejemplo `v0.1.1`.
+## Publicar el frontend
 
-## Dominio
+```bash
+cd frontend
+pnpm install --frozen-lockfile
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm build
+cd ..
 
-El dominio objetivo es `radarcultural.mx`; `www.radarcultural.mx` debe redirigir al dominio principal. Antes de cambiar DNS:
+release_sha="$(git rev-parse --short=12 HEAD)"
+release_dir="/var/www/radarcultural.mx/releases/$release_sha"
+sudo install -d -o wac -g www-data -m 0750 "$release_dir"
+sudo rsync -a --delete frontend/dist/ "$release_dir/"
+sudo ln -sfn "$release_dir" /var/www/radarcultural.mx/current
+```
 
-1. Inspecciona los registros actuales y los servicios que dependen de ellos.
-2. Agrega el dominio al proyecto de Vercel y utiliza exactamente los registros que Vercel solicite.
-3. Si DNS se administra en Cloudflare, conserva correo y otros registros no relacionados.
-4. Verifica propiedad, certificado TLS y redirección de `www`.
-5. No elimines registros existentes sin una evaluación explícita.
+Después verifica el origen y el dominio público. Una actualización de archivos no requiere reiniciar Nginx ni Cloudflared:
 
-Hasta completar esa verificación, utiliza la URL temporal `*.vercel.app` y no declares activo el dominio personalizado.
+```bash
+curl -fsSI -H 'Host: radarcultural.mx' http://127.0.0.1:8093/
+curl -fsSI https://radarcultural.mx/
+curl -fsS https://radarcultural.mx/robots.txt
+```
 
+Conserva al menos el release anterior. Para rollback del frontend, cambia `current` al release verificado anterior y repite las comprobaciones.
+
+## Preparar el backend por primera vez
+
+No ejecutes esta sección hasta contar con autorización, PostgreSQL, respaldo, variables y unidad systemd específica.
+
+1. Crear `backend/.venv` con el Python de producción.
+2. Instalar `backend/requirements.txt` dentro de esa venv.
+3. Crear base y usuario PostgreSQL con privilegios sólo sobre su propia base.
+4. Guardar variables en un archivo root-only fuera del repositorio.
+5. Ejecutar `check --deploy`, migraciones y `collectstatic`.
+6. Crear `radar-community-api.service` con Gunicorn y un socket dedicado.
+7. Añadir en el sitio Nginx únicamente `/api/`, `/admin/` y `/backend-static/` hacia ese socket.
+8. Mantener el mismo túnel: Cloudflare sigue apuntando a Nginx `8093`.
+9. Verificar `GET /api/v1/status/`, un catálogo vacío y que `POST /api/v1/events/` responda `405`.
+
+## Actualizar frontend y backend
+
+Cuando el backend esté operativo:
+
+```bash
+git fetch origin main
+git merge --ff-only origin/main
+
+backend/.venv/bin/python -m pip install --requirement backend/requirements.txt
+backend/.venv/bin/python backend/manage.py check
+backend/.venv/bin/python backend/manage.py migrate --noinput
+backend/.venv/bin/python backend/manage.py collectstatic --noinput
+sudo systemctl restart radar-community-api.service
+sudo systemctl is-active radar-community-api.service
+curl -fsS https://radarcultural.mx/api/v1/status/
+```
+
+Publica el frontend con un nuevo directorio de release después de que la API requerida esté sana. No reinicies servicios ajenos ni la instancia general de Cloudflared.
+
+## Rollback del backend
+
+Un rollback de código no revierte automáticamente el esquema. Antes de una migración de producción, confirma respaldo y reversibilidad. Si el cambio es incompatible, aplica el procedimiento documentado para esa migración; no uses `migrate --fake` como atajo.
