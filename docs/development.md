@@ -15,6 +15,29 @@ pnpm dev
 ```
 
 El servidor queda normalmente en `http://127.0.0.1:5173`. `API_PROXY_TARGET` permite cambiar el backend local sin exponer la variable al bundle.
+Para ver la agenda y sus estados reales, inicia también el backend en otra terminal; sin ese proceso la interfaz muestra su estado de error de conexión. La base local vacía muestra el estado de agenda aún sin publicaciones.
+
+Para revisar el recorrido completo con tres publicaciones **ficticias y marcadas DEMO**, usa la
+SQLite local después de migrar, antes de iniciar ambos servidores:
+
+```bash
+cd backend
+DEBUG=True .venv/bin/python manage.py seed_demo_events --frontend-origin http://127.0.0.1:5174
+DEBUG=True .venv/bin/python manage.py runserver 127.0.0.1:8002
+
+# En otra terminal:
+cd frontend
+API_PROXY_TARGET=http://127.0.0.1:8002 pnpm dev --host 127.0.0.1 --port 5174
+```
+
+Abre `http://127.0.0.1:5174/`: el hero enlaza a las tres fichas y `/agenda/` muestra la misma
+respuesta de `/api/v1/events/`. El comando sólo funciona con `DEBUG=True` y SQLite, acepta
+únicamente un origen local para las imágenes y puede repetirse sin duplicar eventos. Sus enlaces
+`example.test`, títulos y horarios son datos de prueba; no los copies a producción ni a Luna.
+El taller DEMO muestra un programa y un acceso de prueba en EUR en una sede ficticia de Francia;
+la música DEMO usa `Asia/Tokyo` para comprobar las zonas horarias internacionales.
+Si `8002` está ocupado en otra máquina, elige otro puerto libre y usa el mismo en
+`API_PROXY_TARGET`.
 
 ## Backend
 
@@ -27,7 +50,7 @@ cp .env.example .env
 .venv/bin/python manage.py runserver 127.0.0.1:8000
 ```
 
-La configuración falla de forma explícita en producción si faltan `DJANGO_SECRET_KEY` o `DATABASE_URL`. Nunca reutilices el secreto de desarrollo.
+La configuración falla de forma explícita en producción si faltan `DJANGO_SECRET_KEY` o `DATABASE_URL`, si la base no es PostgreSQL o si `DJANGO_ALLOWED_HOSTS` contiene `*`. Nunca reutilices el secreto de desarrollo.
 
 ## Calidad
 
@@ -53,4 +76,11 @@ DEBUG=True .venv/bin/python manage.py test
 
 ## API
 
-El flujo para cambios es contrato → pruebas → implementación. Los errores, paginación y permisos forman parte del contrato. Ejecuta `postman status` al terminar trabajo de API cuando exista la colección local.
+El flujo para cambios es contrato → pruebas → implementación. Los errores, paginación y permisos forman parte del contrato. Valida los artefactos locales antes de cerrar el cambio:
+
+```bash
+postman spec lint backend/openapi.yaml --fail-severity warning --no-report-events
+postman collection lint "postman/collections/Radar Cultural API"
+```
+
+La ejecución conductual de la colección requiere un backend local y una base desechable preparada; consulta `docs/api.md`.

@@ -10,6 +10,12 @@ Cloudflare Tunnel dedicado → Nginx 127.0.0.1:8093 → /var/www/radarcultural.m
 
 `current` es un enlace simbólico a un directorio inmutable bajo `releases/<commit>`. Cambiar el enlace hace atómica la publicación del frontend. El backend todavía no está desplegado y no existe un servicio Gunicorn de Radar Community.
 
+Con `DEBUG=False`, la aplicación exige una `DATABASE_URL` PostgreSQL y rechaza `DJANGO_ALLOWED_HOSTS=*` antes de iniciar.
+HSTS empieza con una hora y sin `includeSubDomains` ni `preload`. Aumenta su duración sólo después de comprobar HTTPS en el dominio público; habilita las otras opciones únicamente si todos los subdominios están bajo el mismo compromiso HTTPS y se decidió registrarlo para precarga.
+`check --deploy` avisará con `security.W005` y `security.W021` mientras esas opciones permanezcan desactivadas; documenta esa decisión en la revisión del despliegue. La CI ejecuta `python -m radar_api.deployment_checks`, que admite sólo esos dos avisos y falla ante cualquier otro aviso o error. Un aviso sobre la fortaleza de `DJANGO_SECRET_KEY` sí requiere corregir el secreto real antes de publicar.
+
+El build contiene `index.html` por ruta para `/agenda/`, `/privacidad/`, `/terminos/` y `/codigo-de-conducta/`. Nginx debe reconocer los directorios con `index index.html` y `try_files $uri $uri/ /index.html`; verifica con `curl` que las dos páginas legales devuelvan `noindex` en el HTML inicial. El sitemap estático del build incluye sólo portada, agenda y código de conducta mientras la API no esté desplegada.
+
 ## Actualizar el checkout
 
 En el servidor, dentro del checkout de Radar Community:
@@ -48,6 +54,9 @@ Después verifica el origen y el dominio público. Una actualización de archivo
 curl -fsSI -H 'Host: radarcultural.mx' http://127.0.0.1:8093/
 curl -fsSI https://radarcultural.mx/
 curl -fsS https://radarcultural.mx/robots.txt
+curl -fsS https://radarcultural.mx/sitemap.xml
+curl -fsS https://radarcultural.mx/privacidad/
+curl -fsS https://radarcultural.mx/terminos/
 ```
 
 Conserva al menos el release anterior. Para rollback del frontend, cambia `current` al release verificado anterior y repite las comprobaciones.
@@ -62,9 +71,10 @@ No ejecutes esta sección hasta contar con autorización, PostgreSQL, respaldo, 
 4. Guardar variables en un archivo root-only fuera del repositorio.
 5. Ejecutar `check --deploy`, migraciones y `collectstatic`.
 6. Crear `radar-community-api.service` con Gunicorn y un socket dedicado.
-7. Añadir en el sitio Nginx únicamente `/api/`, `/admin/` y `/backend-static/` hacia ese socket.
+7. Añadir en el sitio Nginx únicamente `/api/`, `/admin/`, `/backend-static/`, `/eventos/`, `/sitemap.xml` y `/sitemap-*.xml` hacia ese socket. La ruta `/eventos/` debe ir a Django antes del fallback de Vue para conservar HTML indexable y `404` reales para eventos no públicos. Las rutas del sitemap dinámico deben ir a Django; sin backend, el build de Vue sirve un mapa estático sólo de páginas públicas.
+   En las ubicaciones hacia Gunicorn, establecer `Host` desde el host validado por Nginx y sobrescribir `X-Forwarded-Proto` con el esquema HTTPS autenticado por el borde; no transmitir ninguno de esos encabezados desde el cliente sin validación. Django no usa `X-Forwarded-Host`. Comprobar las URL canónicas y los redirects tras publicar por Cloudflare Tunnel.
 8. Mantener el mismo túnel: Cloudflare sigue apuntando a Nginx `8093`.
-9. Verificar `GET /api/v1/status/`, un catálogo vacío y que `POST /api/v1/events/` responda `405`.
+9. Verificar `GET /api/v1/status/`, un catálogo vacío, que `POST /api/v1/events/` responda `405`, y que `/eventos/<slug>/` entregue HTML con Schema.org sólo para un evento aprobado. Un slug ausente o retirado debe responder `404` desde Nginx y el dominio público. Verificar también que `/sitemap.xml` y `/sitemap-events.xml` salgan de Django y que un evento retirado desaparezca del mapa.
 
 ## Actualizar frontend y backend
 

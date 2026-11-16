@@ -58,6 +58,8 @@ AGENTS.md          Contexto seguro para contribuciones asistidas por IA
 - [Arquitectura](docs/architecture.md)
 - [Backend y seguridad](docs/backend.md)
 - [Contrato de API](docs/api.md)
+- [Integración futura con Luna](docs/luna-integration.md)
+- [Brechas para que Radar sea la API central](docs/radar-api-central-gap.md)
 - [Desarrollo](docs/development.md)
 - [Despliegue](docs/deployment.md)
 - [Sistema visual](docs/design-system.md)

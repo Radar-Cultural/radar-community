@@ -12,9 +12,9 @@ Gracias por colaborar con Radar Cultural. Antes de escribir código, revisa el a
 
 ## Ramas, commits y PR
 
-- Crea una rama corta desde `main`: `feat/api-events`, `fix/mobile-header`.
+- Crea una rama corta desde `main` con prefijo `feature/`, `fix/`, `update/`, `docs/`, `test/`, `ci/` o `refactor/`; por ejemplo, `feature/radar-community-alpha` o `fix/mobile-header`. `update/` se reserva para contenido o dependencias sin cambio funcional.
 - Mantén un cambio enfocado por PR.
-- Usa títulos `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:` o `ci:`.
+- Usa títulos de PR `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:` o `ci:`. Los dos puntos pertenecen al título; en la rama se usa `/`. Un trabajo `update/` usa `chore:` o `docs:` según su contenido.
 - Vincula la issue con `Closes #...`.
 - Adjunta capturas de escritorio y móvil para cambios visuales.
 - El merge preferido es squash después de CI y revisión de CODEOWNERS.
