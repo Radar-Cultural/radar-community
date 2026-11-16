@@ -1,3 +1,5 @@
 User-agent: *
 Allow: /
 
+Sitemap: https://radarcultural.mx/sitemap.xml
+

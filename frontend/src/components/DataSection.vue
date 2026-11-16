@@ -1,51 +1,134 @@
 <script setup lang="ts">
-const layers = [
-  { name: 'Event', caption: 'Actividad cultural', icon: 'calendar', tone: 'violet' },
-  { name: 'Place', caption: 'Espacio y ubicación', icon: 'place', tone: 'coral' },
-  { name: 'Organization', caption: 'Fuente responsable', icon: 'people', tone: 'jade' },
-] as const
+import { onMounted, onUnmounted, ref } from 'vue'
+import { gsap } from 'gsap'
+
+const fields = ['Qué', 'Dónde', 'Cuándo', 'Acceso'] as const
+const uses = ['Descubrir', 'Compartir', 'Reutilizar'] as const
+
+const root = ref<HTMLElement | null>(null)
+let context: gsap.Context | undefined
+let media: gsap.MatchMedia | undefined
+
+onMounted(() => {
+  if (!root.value || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  context = gsap.context(() => {
+    media = gsap.matchMedia()
+
+    media.add('(min-width: 821px)', () => {
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: '.data__stage',
+          start: 'top top',
+          end: '+=1450',
+          pin: true,
+          scrub: 0.75,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      timeline
+        .fromTo(
+          '.data__radar',
+          { scale: 0.62, opacity: 0.25 },
+          { scale: 1, opacity: 1, duration: 0.72, ease: 'none' },
+          0,
+        )
+        .fromTo(
+          '.data__title',
+          { '--title-reveal': '0%' },
+          { '--title-reveal': '100%', duration: 0.82, ease: 'none' },
+          0.08,
+        )
+        .to('.data__radar-sweep', { rotate: 212, duration: 1, ease: 'none' }, 0)
+        .to('.data__radar-ring--broken', { rotate: -52, duration: 1, ease: 'none' }, 0)
+        .fromTo(
+          '.data__radar-signal',
+          { opacity: 0, scale: 0 },
+          { opacity: 1, scale: 1, duration: 0.12, stagger: 0.11, ease: 'back.out(1.8)' },
+          0.28,
+        )
+        .fromTo(
+          '.data__use',
+          { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: 0.2, stagger: 0.1, ease: 'power2.out' },
+          0.62,
+        )
+        .to('.data__stream--top', { xPercent: -9, duration: 1, ease: 'none' }, 0)
+        .to('.data__stream--bottom', { xPercent: 9, duration: 1, ease: 'none' }, 0)
+    })
+
+    media.add('(max-width: 820px)', () => {
+      gsap.from('.data__radar', {
+        opacity: 0,
+        scale: 0.72,
+        duration: 1.05,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: root.value, start: 'top 68%' },
+      })
+      gsap.from('.data__radar-signal, .data__use', {
+        opacity: 0,
+        scale: 0.7,
+        stagger: 0.08,
+        duration: 0.65,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: '.data__title', start: 'top 70%' },
+      })
+    })
+  }, root.value)
+})
+
+onUnmounted(() => {
+  media?.revert()
+  context?.revert()
+})
 </script>
 
 <template>
-  <section id="datos" class="data section-pad" aria-labelledby="data-title">
-    <div class="data__inner page-width">
-      <div v-reveal class="data__copy">
-        <h2 id="data-title">Datos que pueden <em>viajar</em></h2>
-        <p>
-          Estructuras interoperables para que la información cultural sea fácil de consultar,
-          reutilizar y preservar.
-        </p>
-        <ul class="data__standards" aria-label="Principios de los datos">
-          <li><span class="tone-violet"></span>Schema.org</li>
-          <li><span class="tone-coral"></span>Datos abiertos</li>
-          <li><span class="tone-jade"></span>Fuentes verificables</li>
-        </ul>
+  <section id="datos" ref="root" class="data" aria-labelledby="data-title">
+    <div class="data__stage">
+      <div class="data__stream data__stream--top" aria-hidden="true">
+        <span v-for="(field, index) in [...fields, ...fields]" :key="`top-${field}-${index}`">
+          {{ field }}
+        </span>
       </div>
 
-      <div v-reveal class="data-model" aria-label="Relación entre evento, lugar y organización">
-        <div class="data-model__orbit" aria-hidden="true"></div>
-        <article
-          v-for="layer in layers"
-          :key="layer.name"
-          :class="`data-layer data-layer--${layer.tone}`"
-        >
-          <svg v-if="layer.icon === 'calendar'" viewBox="0 0 48 48" aria-hidden="true">
-            <rect x="8" y="11" width="32" height="29" rx="4" />
-            <path d="M15 7v8M33 7v8M8 20h32M16 27h4M27 27h4M16 34h4" />
-          </svg>
-          <svg v-else-if="layer.icon === 'place'" viewBox="0 0 48 48" aria-hidden="true">
-            <path d="M38 20c0 10-14 21-14 21S10 30 10 20a14 14 0 1 1 28 0Z" />
-            <circle cx="24" cy="20" r="5" />
-          </svg>
-          <svg v-else viewBox="0 0 48 48" aria-hidden="true">
-            <circle cx="24" cy="16" r="7" />
-            <circle cx="11" cy="21" r="4" />
-            <circle cx="37" cy="21" r="4" />
-            <path d="M11 38c1-8 6-12 13-12s12 4 13 12M3 37c1-6 4-9 9-9M45 37c-1-6-4-9-9-9" />
-          </svg>
-          <h3>{{ layer.name }}</h3>
-          <p>{{ layer.caption }}</p>
-        </article>
+      <header class="data__header page-width">
+        <p>Datos que abren caminos</p>
+        <span>Información útil, abierta y reutilizable</span>
+      </header>
+
+      <div class="data__radar" aria-hidden="true">
+        <span class="data__radar-ring data__radar-ring--edge"></span>
+        <span class="data__radar-ring data__radar-ring--middle"></span>
+        <span class="data__radar-ring data__radar-ring--core"></span>
+        <span class="data__radar-ring data__radar-ring--broken"></span>
+        <span class="data__radar-axis data__radar-axis--horizontal"></span>
+        <span class="data__radar-axis data__radar-axis--vertical"></span>
+        <span class="data__radar-sweep"></span>
+        <i class="data__radar-signal data__radar-signal--one"></i>
+        <i class="data__radar-signal data__radar-signal--two"></i>
+        <i class="data__radar-signal data__radar-signal--three"></i>
+      </div>
+
+      <h2 id="data-title" class="data__title" aria-label="Cultura abierta">
+        <span class="data__title-row" aria-hidden="true">
+          <i class="data__title-outline" data-text="Cultura">Cultura</i>
+        </span>
+        <span class="data__title-row" aria-hidden="true">
+          <i class="data__title-outline" data-text="Abierta">Abierta</i>
+        </span>
+      </h2>
+
+      <ul class="data__uses" aria-label="Usos de los datos abiertos">
+        <li v-for="use in uses" :key="use" class="data__use"><i></i>{{ use }}</li>
+      </ul>
+
+      <div class="data__stream data__stream--bottom" aria-hidden="true">
+        <span v-for="(use, index) in [...uses, ...uses, ...uses]" :key="`bottom-${use}-${index}`">
+          {{ use }}
+        </span>
       </div>
     </div>
   </section>
@@ -53,225 +136,289 @@ const layers = [
 
 <style scoped>
 .data {
+  --radar-mint: #19b39a;
+  --radar-gold: #d8a94e;
   position: relative;
-  overflow: hidden;
-  color: #f2f4f7;
-  background:
-    radial-gradient(circle at 72% 48%, rgb(109 74 255 / 0.18), transparent 25rem),
-    linear-gradient(155deg, #0d1321, #11172b 60%, #161128);
+  z-index: 3;
+  overflow: clip;
+  color: #f7f8fa;
+  background: #08090d;
 }
-
-.data::before {
+.data__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  overflow: hidden;
+  padding-block: calc(var(--header) + 2rem) 4rem;
+}
+.data__header {
+  position: absolute;
+  z-index: 7;
+  top: calc(var(--header) + 2rem);
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  color: #aeb2bd;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.data__header p,
+.data__header span {
+  margin: 0;
+}
+.data__header p {
+  color: #f7f8fa;
+}
+.data__title {
+  --title-reveal: 0%;
+  position: relative;
+  z-index: 4;
+  display: grid;
+  justify-items: center;
+  margin: 0;
+  color: transparent;
+  font-family: var(--display);
+  font-size: clamp(6rem, 13vw, 13.5rem);
+  font-weight: 650;
+  line-height: 0.72;
+  letter-spacing: -0.075em;
+  text-transform: uppercase;
+}
+.data__title-row,
+.data__title-row i {
+  position: relative;
+  display: block;
+}
+.data__title-row i {
+  font-style: normal;
+  white-space: nowrap;
+}
+.data__title-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(247 248 250 / 0.66);
+}
+.data__title-outline::after {
   position: absolute;
   inset: 0;
-  content: '';
-  background-image: radial-gradient(circle, rgb(242 244 247 / 0.12) 0 1px, transparent 1px);
-  background-size: 2rem 2rem;
-  mask-image: linear-gradient(90deg, transparent, #000 55%, transparent);
+  color: #f7f8fa;
+  clip-path: inset(0 calc(100% - var(--title-reveal)) 0 0);
+  content: attr(data-text);
+  -webkit-text-stroke: 0;
+  will-change: clip-path;
 }
-
-.data__inner {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(20rem, 0.72fr) minmax(34rem, 1.28fr);
-  gap: clamp(3rem, 7vw, 7rem);
-  align-items: center;
+.data__radar {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(26vw, 23rem);
+  min-width: 17rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(109 74 255 / 0.1), transparent 66%);
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
 }
-
-.data h2 {
-  max-width: 10ch;
+.data__radar-ring,
+.data__radar-axis,
+.data__radar-sweep,
+.data__radar-signal {
+  position: absolute;
+  display: block;
+}
+.data__radar-ring {
+  border: 1px solid rgb(247 248 250 / 0.24);
+  border-radius: 50%;
+}
+.data__radar-ring--edge {
+  inset: 2%;
+}
+.data__radar-ring--middle {
+  inset: 22%;
+}
+.data__radar-ring--core {
+  inset: 42%;
+  border-color: color-mix(in srgb, var(--radar-mint) 55%, transparent);
+}
+.data__radar-ring--broken {
+  inset: 11%;
+  border-color: rgb(255 91 91 / 0.68) transparent rgb(109 74 255 / 0.5);
+  will-change: transform;
+}
+.data__radar-axis {
+  top: 50%;
+  left: 8%;
+  width: 84%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(247 248 250 / 0.2), transparent);
+}
+.data__radar-axis--vertical {
+  transform: rotate(90deg);
+}
+.data__radar-sweep {
+  top: 50%;
+  left: 50%;
+  width: 46%;
+  height: 46%;
+  background: conic-gradient(
+    from 250deg at 0 0,
+    transparent 0deg,
+    rgb(25 179 154 / 0.35) 32deg,
+    transparent 34deg
+  );
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.data__radar-signal {
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 50%;
+  background: #f7f8fa;
+  box-shadow:
+    0 0 0 0.42rem rgb(247 248 250 / 0.08),
+    0 0 1.4rem rgb(25 179 154 / 0.76);
+  will-change: transform, opacity;
+}
+.data__radar-signal--one {
+  top: 25%;
+  left: 61%;
+}
+.data__radar-signal--two {
+  top: 61%;
+  left: 23%;
+  background: var(--coral);
+}
+.data__radar-signal--three {
+  right: 19%;
+  bottom: 21%;
+  background: var(--radar-gold);
+}
+.data__uses {
+  position: absolute;
+  z-index: 7;
+  right: 0;
+  bottom: 2.1rem;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  gap: clamp(1.5rem, 5vw, 5rem);
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(3.5rem, 6vw, 6.6rem);
-  line-height: 0.95;
-  letter-spacing: -0.055em;
-}
-
-.data h2 em {
-  color: var(--color-coral);
-  font-style: italic;
-  font-weight: 620;
-}
-
-.data__copy > p {
-  max-width: 32rem;
-  margin: 1.8rem 0 0;
-  color: #c8ccd6;
-  font-size: clamp(1.05rem, 1.4vw, 1.22rem);
-  line-height: 1.65;
-}
-
-.data__standards {
-  display: grid;
-  gap: 0.8rem;
-  margin: 2.2rem 0 0;
   padding: 0;
   list-style: none;
 }
-
-.data__standards li {
+.data__use {
   display: flex;
+  gap: 0.55rem;
   align-items: center;
-  gap: 0.75rem;
-  color: #d9dce5;
+  color: #c3c6cf;
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  will-change: transform, opacity;
 }
-
-.data__standards span {
-  width: 0.55rem;
-  aspect-ratio: 1;
+.data__use i {
+  width: 0.52rem;
+  height: 0.52rem;
   border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 0 0.35rem color-mix(in srgb, currentColor 12%, transparent);
+  background: var(--coral);
 }
-
-.tone-violet {
-  color: var(--color-violet-soft);
+.data__use:nth-child(2) i {
+  background: var(--blue);
 }
-.tone-coral {
-  color: var(--color-coral);
+.data__use:nth-child(3) i {
+  background: var(--radar-gold);
 }
-.tone-jade {
-  color: var(--color-jade);
-}
-
-.data-model {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: center;
-  min-height: 36rem;
-  perspective: 80rem;
-}
-
-.data-model::before {
+.data__stream {
   position: absolute;
-  z-index: 0;
-  right: 3%;
-  left: 3%;
-  top: 50%;
-  height: 2px;
-  content: '';
-  background: linear-gradient(90deg, var(--color-violet), var(--color-coral), var(--color-jade));
-  box-shadow: 0 0 1.2rem rgb(109 74 255 / 0.45);
-}
-
-.data-model__orbit {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 30rem;
-  aspect-ratio: 1;
-  border: 1px solid rgb(134 112 255 / 0.28);
-  border-radius: 50%;
-  background: repeating-radial-gradient(
-    circle,
-    transparent 0 3.8rem,
-    rgb(134 112 255 / 0.12) 3.85rem 3.9rem
-  );
-  transform: translate(-50%, -50%);
-}
-
-.data-layer {
-  position: relative;
   z-index: 1;
-  display: grid;
-  place-items: center;
-  min-height: 17rem;
-  padding: 2rem 1rem;
-  border: 1px solid currentColor;
-  border-radius: 1.3rem;
-  background: linear-gradient(145deg, rgb(255 255 255 / 0.15), rgb(255 255 255 / 0.05));
-  box-shadow: 0 1.8rem 4rem rgb(0 0 0 / 0.2);
-  text-align: center;
-  backdrop-filter: blur(22px);
-  transition: transform 300ms var(--ease-bounce);
+  display: flex;
+  gap: clamp(3rem, 8vw, 9rem);
+  width: 120%;
+  color: rgb(247 248 250 / 0.12);
+  font-family: var(--display);
+  font-size: clamp(1rem, 1.6vw, 1.75rem);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  will-change: transform;
+}
+.data__stream--top {
+  top: 18%;
+  left: -2%;
+}
+.data__stream--bottom {
+  right: -2%;
+  bottom: 15%;
+  justify-content: flex-end;
 }
 
-.data-layer:nth-of-type(1) {
-  transform: translateX(1rem) rotateY(7deg);
-}
-.data-layer:nth-of-type(2) {
-  z-index: 2;
-  transform: translateY(1.4rem) scale(1.05);
-}
-.data-layer:nth-of-type(3) {
-  transform: translateX(-1rem) rotateY(-7deg);
-}
-
-.data-layer:hover {
-  z-index: 4;
-  transform: translateY(-0.55rem) scale(1.045);
-}
-.data-layer--violet {
-  color: #a793ff;
-}
-.data-layer--coral {
-  color: #ff8585;
-}
-.data-layer--jade {
-  color: #55dbc3;
-}
-
-.data-layer svg {
-  width: 3.5rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
-}
-
-.data-layer h3 {
-  margin: 1rem 0 0;
-  color: #f2f4f7;
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.4vw, 2.25rem);
-}
-
-.data-layer p {
-  margin: 0.45rem 0 0;
-  color: #c8ccd6;
-  font-size: 0.9rem;
-}
-
-@media (max-width: 980px) {
-  .data__inner {
-    grid-template-columns: 1fr;
+@media (max-width: 820px) {
+  .data__stage {
+    min-height: 54rem;
+    padding-block: calc(var(--header) + 5rem) 6rem;
   }
-
-  .data-model {
-    min-height: 30rem;
+  .data__header {
+    top: calc(var(--header) + 2rem);
+    display: grid;
+    gap: 0.35rem;
+  }
+  .data__title {
+    --title-reveal: 100%;
+    font-size: clamp(4.4rem, 18vw, 8rem);
+    line-height: 0.78;
+  }
+  .data__radar {
+    width: min(54vw, 20rem);
+    min-width: 15rem;
+  }
+  .data__uses {
+    bottom: 5rem;
+    flex-wrap: wrap;
+  }
+  .data__stream--top {
+    display: none;
   }
 }
 
-@media (max-width: 650px) {
-  .data-model {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    min-height: auto;
-    margin-top: 1rem;
+@media (max-width: 430px) {
+  .data__stage {
+    min-height: 48rem;
   }
-
-  .data-model::before {
-    top: 3%;
-    bottom: 3%;
-    left: 50%;
-    width: 2px;
-    height: auto;
+  .data__header span {
+    display: none;
   }
-
-  .data-model__orbit {
-    width: 22rem;
+  .data__title {
+    font-size: clamp(3.5rem, 17vw, 4.3rem);
   }
-
-  .data-layer {
-    width: min(100%, 24rem);
-    min-height: 11rem;
-    margin-inline: auto;
+  .data__radar {
+    width: 58vw;
+    min-width: 13.5rem;
   }
+  .data__uses {
+    gap: 1.15rem;
+  }
+  .data__stream {
+    font-size: 0.9rem;
+  }
+}
 
-  .data-layer:nth-of-type(n) {
-    transform: none;
+@media (prefers-reduced-motion: reduce) {
+  .data__radar,
+  .data__radar-ring,
+  .data__radar-sweep,
+  .data__radar-signal,
+  .data__use,
+  .data__stream {
+    opacity: 1;
+  }
+  .data__title {
+    --title-reveal: 100%;
   }
 }
 </style>

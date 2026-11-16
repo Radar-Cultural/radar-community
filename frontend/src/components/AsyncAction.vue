@@ -4,7 +4,7 @@ import { ref } from 'vue'
 const props = withDefaults(
   defineProps<{
     href: string
-    variant?: 'primary' | 'secondary'
+    variant?: 'primary' | 'text'
     external?: boolean
   }>(),
   { variant: 'primary', external: false },
@@ -20,23 +20,23 @@ function activate(event: MouseEvent) {
     document.querySelector(props.href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     window.history.replaceState(null, '', props.href)
     busy.value = false
-  }, 420)
+  }, 380)
 }
 </script>
 
 <template>
   <a
     class="action"
-    :class="`action--${variant}`"
+    :class="['action--' + variant, { 'is-busy': busy }]"
     :href="href"
     :target="external ? '_blank' : undefined"
     :rel="external ? 'noreferrer' : undefined"
     :aria-busy="busy"
     @click="activate"
   >
-    <span class="action__label"><slot /></span>
+    <span><slot /></span>
     <span v-if="busy" class="action__loader" aria-hidden="true"></span>
-    <svg v-else class="action__arrow" viewBox="0 0 24 24" aria-hidden="true">
+    <svg v-else viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 12h13M13 6l6 6-6 6" />
     </svg>
   </a>
@@ -47,60 +47,59 @@ function activate(event: MouseEvent) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.8rem;
+  gap: 0.85rem;
   min-height: 3.7rem;
-  padding: 0.9rem 1.55rem;
+  padding: 0.95rem 1.55rem;
   border: 1px solid transparent;
-  border-radius: 999px;
-  font-size: 0.98rem;
-  font-weight: 720;
+  border-radius: 0.2rem;
+  font-size: 0.96rem;
+  font-weight: 730;
   line-height: 1;
   text-decoration: none;
   transition:
     transform 220ms var(--ease-bounce),
     box-shadow 220ms ease,
-    background 220ms ease;
+    color 180ms ease;
 }
 
 .action--primary {
   color: #fff;
-  background: linear-gradient(120deg, #5836f4, #794cff 60%, #6544f2);
-  box-shadow: 0 0.8rem 2.2rem rgb(109 74 255 / 0.25);
+  background: var(--blue);
+  box-shadow: 0 0.85rem 2.4rem rgb(49 87 255 / 0.24);
 }
 
-.action--secondary {
-  border-color: var(--color-line-strong);
-  color: var(--color-text);
-  background: var(--color-acrylic);
-  backdrop-filter: blur(16px);
+.action--text {
+  min-height: 3.7rem;
+  padding: 0.95rem 1.3rem;
+  border-color: var(--line-strong);
+  border-radius: 0.2rem;
+  color: inherit;
+  background: color-mix(in srgb, var(--acrylic) 82%, transparent);
+  box-shadow: 0 0.75rem 2.2rem rgb(8 9 13 / 0.08);
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
 }
 
 .action:hover {
-  transform: translateY(-0.22rem) scale(1.015);
+  transform: translateY(-0.22rem);
 }
 
 .action--primary:hover {
-  box-shadow: 0 1rem 2.8rem rgb(109 74 255 / 0.38);
+  box-shadow: 0 1.1rem 2.8rem rgb(49 87 255 / 0.34);
 }
 
-.action:focus-visible {
-  outline: 2px solid var(--color-jade);
-  outline-offset: 0.25rem;
-}
-
-.action__arrow {
+.action svg {
   width: 1.2rem;
-  height: 1.2rem;
   fill: none;
   stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   stroke-width: 1.8;
-  transition: transform 200ms var(--ease-out);
+  transition: transform 180ms var(--ease-out);
 }
 
-.action:hover .action__arrow {
-  transform: translateX(0.2rem);
+.action:hover svg {
+  transform: translateX(0.25rem);
 }
 
 .action__loader {
@@ -119,7 +118,7 @@ function activate(event: MouseEvent) {
 }
 
 @media (max-width: 520px) {
-  .action {
+  .action--primary {
     width: 100%;
   }
 }

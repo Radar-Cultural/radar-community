@@ -1,24 +1,31 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-const visible = ref(true)
+const visible = ref(false)
+let timer = 0
 
 onMounted(() => {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  window.setTimeout(
-    () => {
-      visible.value = false
-    },
-    reduced ? 80 : 1180,
+  if (
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    window.sessionStorage.getItem('radar-intro-seen')
   )
+    return
+
+  visible.value = true
+  window.sessionStorage.setItem('radar-intro-seen', 'true')
+  timer = window.setTimeout(() => {
+    visible.value = false
+  }, 1050)
 })
+
+onBeforeUnmount(() => window.clearTimeout(timer))
 </script>
 
 <template>
-  <Transition name="intro-fade">
+  <Transition name="intro">
     <div v-if="visible" class="intro" aria-hidden="true">
-      <div class="intro__radar"><span></span></div>
-      <p>Radar Cultural</p>
+      <p><span>Radar</span> Cultural</p>
+      <div class="intro__line"><span></span></div>
     </div>
   </Transition>
 </template>
@@ -26,101 +33,71 @@ onMounted(() => {
 <style scoped>
 .intro {
   position: fixed;
-  z-index: 1000;
+  z-index: 5000;
   inset: 0;
   display: grid;
   place-content: center;
-  gap: 1.4rem;
-  background: #0d1321;
+  justify-items: center;
+  color: var(--white);
+  background: var(--ink);
+  pointer-events: none;
 }
 
 .intro p {
   margin: 0;
-  color: #f2f4f7;
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  letter-spacing: 0.02em;
-  animation: intro-copy 720ms 220ms both var(--ease-out);
-}
-
-.intro__radar {
-  position: relative;
-  width: 5rem;
-  aspect-ratio: 1;
-  margin-inline: auto;
-  border: 1px solid rgb(109 74 255 / 0.6);
-  border-radius: 50%;
-  background: repeating-radial-gradient(
-    circle,
-    transparent 0 0.68rem,
-    rgb(109 74 255 / 0.34) 0.72rem 0.76rem
-  );
   overflow: hidden;
-  animation: intro-scale 760ms both var(--ease-out);
+  font-family: var(--display);
+  font-size: clamp(2.3rem, 5vw, 4.2rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  animation: intro-word 700ms 180ms var(--ease-out) both;
 }
 
-.intro__radar::before {
-  position: absolute;
-  inset: 50% 50% 0;
-  width: 50%;
-  height: 50%;
-  content: '';
-  background: conic-gradient(from 180deg, rgb(25 179 154 / 0.8), transparent 68%);
-  transform-origin: 0 0;
-  animation: intro-scan 850ms 140ms both ease-in-out;
+.intro p span {
+  font-weight: 700;
 }
 
-.intro__radar span {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0.45rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #ff5b5b;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 1.4rem #ff5b5b;
+.intro__line {
+  position: relative;
+  overflow: hidden;
+  width: min(18rem, 54vw);
+  height: 1px;
+  margin-top: 1.2rem;
+  background: rgb(247 248 250 / 0.25);
 }
 
-.intro-fade-leave-active {
+.intro__line span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  background: var(--blue);
+  animation: intro-line 800ms 180ms var(--ease-out) both;
+}
+
+.intro-leave-active {
   transition:
-    opacity 360ms ease,
-    transform 500ms var(--ease-out);
+    clip-path 520ms var(--ease-out),
+    opacity 360ms ease;
 }
 
-.intro-fade-leave-to {
+.intro-leave-to {
   opacity: 0;
-  transform: scale(1.04);
+  clip-path: inset(0 0 100% 0);
 }
 
-@keyframes intro-scale {
+@keyframes intro-word {
   from {
     opacity: 0;
-    transform: scale(0.55);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+    transform: translateY(100%);
   }
 }
 
-@keyframes intro-scan {
+@keyframes intro-line {
   from {
-    transform: rotate(-120deg);
+    transform: translateX(-110%);
   }
   to {
-    transform: rotate(220deg);
-  }
-}
-
-@keyframes intro-copy {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateX(265%);
   }
 }
 </style>

@@ -1,241 +1,343 @@
 <script setup lang="ts">
-import radarImage from '../assets/mexico-radar.webp'
+import { computed } from 'vue'
+import type { CulturalEvent } from '../api/radar'
+import { formatEventTeaserDate } from '../api/formatDate'
+import architecture from '../assets/hero-day.webp'
+import workshop from '../assets/community-workshop.webp'
+import dance from '../assets/fragment-dance.webp'
+import cinema from '../assets/fragment-cinema.webp'
 
-function updateDepth(event: PointerEvent) {
-  const target = event.currentTarget as HTMLElement
-  const rect = target.getBoundingClientRect()
-  const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2
-  const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2
-  target.style.setProperty('--pointer-x', x.toFixed(3))
-  target.style.setProperty('--pointer-y', y.toFixed(3))
+const props = defineProps<{ events: CulturalEvent[] }>()
+
+function briefCredit(credit: string): string {
+  if (credit.includes('Radar Cultural')) return 'Radar Cultural'
+  if (credit.length <= 18) return credit
+  const words = credit.slice(0, 19).trimEnd().split(' ')
+  if (words.length > 1) words.pop()
+  return `${words.join(' ')}…`
 }
 
-function resetDepth(event: PointerEvent) {
-  const target = event.currentTarget as HTMLElement
-  target.style.setProperty('--pointer-x', '0')
-  target.style.setProperty('--pointer-y', '0')
-}
+const editorialFragments = [
+  {
+    src: dance,
+    className: 'fragment--dance',
+    width: 1280,
+    height: 960,
+    drift: '18px',
+    tilt: '-5deg',
+  },
+  {
+    src: workshop,
+    className: 'fragment--workshop',
+    width: 1122,
+    height: 1402,
+    drift: '-14px',
+    tilt: '4deg',
+  },
+  {
+    src: architecture,
+    className: 'fragment--architecture',
+    width: 1585,
+    height: 992,
+    drift: '15px',
+    tilt: '3deg',
+  },
+  {
+    src: cinema,
+    className: 'fragment--music',
+    width: 1120,
+    height: 1120,
+    drift: '-12px',
+    tilt: '0deg',
+  },
+] as const
+
+const fragments = computed(() =>
+  editorialFragments.map((fragment, index) => ({
+    ...fragment,
+    event: props.events[index] ?? null,
+    src: props.events[index]?.image?.url ?? fragment.src,
+  })),
+)
 </script>
 
 <template>
-  <figure
-    class="radar-scene"
-    aria-label="Mapa de México recorrido por una señal de radar cultural"
-    @pointermove="updateDepth"
-    @pointerleave="resetDepth"
-  >
-    <div class="radar-scene__rings" aria-hidden="true">
-      <span class="radar-scene__sweep"></span>
-      <span class="radar-scene__core"></span>
-    </div>
-    <img
-      class="radar-scene__map"
-      :src="radarImage"
-      width="1200"
-      height="800"
-      alt="Mapa punteado de México con señales culturales conectadas"
-      fetchpriority="high"
-    />
-    <div class="cultural-fragment cultural-fragment--museum" aria-hidden="true">
-      <svg viewBox="0 0 90 64">
-        <path
-          d="M8 52h74M14 47h62M20 43V25M33 43V25M45 43V25M57 43V25M70 43V25M14 20 45 7l31 13Z"
-        />
-      </svg>
-    </div>
-    <div class="cultural-fragment cultural-fragment--book" aria-hidden="true">
-      <svg viewBox="0 0 90 64">
-        <path
-          d="M45 50c-8-7-18-10-32-9V12c14-1 24 3 32 10Zm0 0c8-7 18-10 32-9V12c-14-1-24 3-32 10Z"
-        />
-      </svg>
-    </div>
-    <div class="cultural-fragment cultural-fragment--stage" aria-hidden="true">
-      <svg viewBox="0 0 90 64">
-        <path d="M9 9h72v46H9Zm8 0c1 18 7 30 20 39M73 9c-1 18-7 30-20 39M34 43h22" />
-      </svg>
-    </div>
-  </figure>
+  <div class="culture-fragments">
+    <figure
+      v-for="(fragment, index) in fragments"
+      :key="fragment.className"
+      class="fragment-slot"
+      :class="[fragment.className, { 'fragment-slot--linked': fragment.event }]"
+    >
+      <div class="fragment-frame">
+        <div class="fragment-card" :style="{ '--drift': fragment.drift, '--tilt': fragment.tilt }">
+          <a
+            v-if="fragment.event"
+            class="fragment-media fragment-media--event"
+            :href="`/eventos/${encodeURIComponent(fragment.event.slug)}/`"
+          >
+            <img
+              :src="fragment.src"
+              alt=""
+              :width="fragment.width"
+              :height="fragment.height"
+              :loading="index < 2 ? 'eager' : 'lazy'"
+              decoding="async"
+            />
+            <small
+              v-if="fragment.event.image"
+              class="fragment-credit"
+              :title="`Crédito de imagen: ${fragment.event.image.credit}`"
+              >Foto: {{ briefCredit(fragment.event.image.credit) }}</small
+            >
+            <span class="fragment-caption">
+              <time :datetime="fragment.event.starts_at">
+                {{ formatEventTeaserDate(fragment.event.starts_at, fragment.event.time_zone) }}
+              </time>
+              <strong :lang="fragment.event.language_code || undefined">{{
+                fragment.event.title
+              }}</strong>
+            </span>
+          </a>
+          <div v-else class="fragment-media" aria-hidden="true">
+            <img
+              :src="fragment.src"
+              alt=""
+              :width="fragment.width"
+              :height="fragment.height"
+              :fetchpriority="index < 2 ? 'high' : 'auto'"
+            />
+          </div>
+        </div>
+      </div>
+    </figure>
+  </div>
 </template>
 
 <style scoped>
-.radar-scene {
-  --pointer-x: 0;
-  --pointer-y: 0;
-  position: relative;
-  width: min(57vw, 54rem);
-  aspect-ratio: 1.15;
-  margin: 0;
-  isolation: isolate;
-  transform: translate3d(calc(var(--pointer-x) * -0.25rem), calc(var(--pointer-y) * -0.18rem), 0);
-  transition: transform 160ms ease-out;
-}
-
-.radar-scene::before {
-  position: absolute;
-  z-index: -2;
-  inset: 8% 4%;
-  border-radius: 50%;
-  content: '';
-  background: radial-gradient(circle, rgb(109 74 255 / 0.2), transparent 62%);
-  filter: blur(2.5rem);
-}
-
-.radar-scene__map {
-  position: absolute;
-  z-index: 2;
-  inset: 17% 1% 8%;
-  width: 98%;
-  height: 75%;
-  object-fit: contain;
-  filter: hue-rotate(10deg) saturate(1.12) contrast(1.06);
-  transform: translate3d(calc(var(--pointer-x) * 0.4rem), calc(var(--pointer-y) * 0.3rem), 0);
-  transition: transform 180ms ease-out;
-}
-
-.radar-scene__rings {
+.culture-fragments {
   position: absolute;
   z-index: 1;
-  inset: 5%;
-  border: 1px solid rgb(25 179 154 / 0.48);
-  border-radius: 50%;
-  background:
-    linear-gradient(transparent 49.8%, var(--color-line-strong) 50%, transparent 50.2%),
-    linear-gradient(90deg, transparent 49.8%, var(--color-line-strong) 50%, transparent 50.2%),
-    repeating-radial-gradient(circle, transparent 0 10.8%, rgb(109 74 255 / 0.5) 11% 11.25%);
+  inset: 0;
   overflow: hidden;
-  mask-image: radial-gradient(circle, #000 0 66%, transparent 83%);
+  pointer-events: none;
 }
-
-.radar-scene__sweep {
+.fragment-slot {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 47%;
-  height: 47%;
-  background: conic-gradient(from 182deg, rgb(25 179 154 / 0.62), transparent 72%);
-  transform-origin: 0 0;
-  animation: radar-sweep 7.5s linear infinite;
+  margin: 0;
+  will-change: transform, filter, opacity;
 }
-
-.radar-scene__core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0.7rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-jade);
-  box-shadow:
-    0 0 0 0.65rem rgb(25 179 154 / 0.08),
-    0 0 1.4rem var(--color-jade);
-  transform: translate(-50%, -50%);
-  animation: core-pulse 2.8s ease-out infinite;
+.fragment-slot--linked {
+  pointer-events: auto;
 }
-
-.cultural-fragment {
-  position: absolute;
-  z-index: 3;
-  display: grid;
-  place-items: center;
-  width: clamp(5.7rem, 10vw, 9rem);
-  aspect-ratio: 1.45;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 1.1rem;
-  background: linear-gradient(145deg, var(--color-acrylic-strong), var(--color-acrylic));
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(16px);
+.fragment-frame {
+  width: 100%;
+  height: 100%;
 }
-
-.cultural-fragment svg {
-  width: 62%;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
+.fragment-card {
+  width: 100%;
+  height: 100%;
+  padding: clamp(0.25rem, 0.42vw, 0.42rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+  background: color-mix(in srgb, var(--acrylic-strong) 88%, transparent);
+  box-shadow: 0 1.25rem 4rem rgb(8 9 13 / 0.18);
+  animation: cultural-drift 5.8s ease-in-out infinite alternate;
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  will-change: transform;
 }
-
-.cultural-fragment--museum {
-  top: 10%;
-  left: 15%;
-  color: var(--color-violet-soft);
-  transform: translate3d(calc(var(--pointer-x) * -0.85rem), calc(var(--pointer-y) * -0.65rem), 0)
-    rotate(-5deg);
-  animation: fragment-float 5.8s ease-in-out infinite;
+.fragment-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
 }
-
-.cultural-fragment--book {
-  bottom: 7%;
-  left: 17%;
-  color: var(--color-coral);
-  transform: translate3d(calc(var(--pointer-x) * -0.55rem), calc(var(--pointer-y) * -0.4rem), 0)
-    rotate(4deg);
-  animation: fragment-float 6.8s -1.3s ease-in-out infinite;
+.fragment-media--event {
+  color: #fff;
+  text-decoration: none;
+  animation: fragment-reveal 650ms var(--ease-out) both;
 }
-
-.cultural-fragment--stage {
-  top: 18%;
-  right: -1%;
-  color: var(--color-gold);
-  transform: translate3d(calc(var(--pointer-x) * 0.75rem), calc(var(--pointer-y) * 0.6rem), 0)
-    rotate(4deg);
-  animation: fragment-float 6.2s -2.1s ease-in-out infinite;
-}
-
-@keyframes radar-sweep {
+@keyframes fragment-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-1.25rem) scale(0.96);
+  }
   to {
-    transform: rotate(1turn);
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
-
-@keyframes core-pulse {
-  60%,
-  100% {
-    box-shadow:
-      0 0 0 1.45rem rgb(25 179 154 / 0),
-      0 0 1.4rem var(--color-jade);
+.fragment-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 2.5rem 0.75rem 0.7rem;
+  background: linear-gradient(transparent, rgb(8 9 13 / 0.8));
+  font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.fragment-caption strong,
+.fragment-caption time,
+.fragment-caption small {
+  display: block;
+}
+.fragment-caption time {
+  margin-bottom: 0.3rem;
+  overflow: hidden;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fragment-caption strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.fragment-credit {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  max-width: calc(100% - 1rem);
+  padding: 0.23rem 0.4rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 0.25rem;
+  color: #fff;
+  background: rgb(8 9 13 / 0.52);
+  font-size: 0.63rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.fragment--music .fragment-caption {
+  right: 10%;
+  bottom: 10%;
+  left: 10%;
+  padding: 1.5rem 0.2rem 0.25rem;
+  font-size: clamp(0.6rem, 0.8vw, 0.74rem);
+  text-align: center;
+}
+.fragment-media--event:focus-visible {
+  outline: 3px solid var(--coral);
+  outline-offset: -3px;
+}
+.fragment-slot:nth-child(2n) .fragment-card {
+  animation-duration: 7.1s;
+  animation-delay: -2.4s;
+}
+.fragment-slot:nth-child(3n) .fragment-card {
+  animation-duration: 6.4s;
+  animation-delay: -4.1s;
+}
+.fragment-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fragment--dance {
+  top: 12%;
+  left: 4.5%;
+  width: clamp(12rem, 21vw, 24rem);
+  aspect-ratio: 4 / 3;
+}
+.fragment--workshop {
+  top: 9%;
+  right: 7%;
+  width: clamp(9.5rem, 15vw, 16.5rem);
+  aspect-ratio: 4 / 5;
+}
+.fragment--music .fragment-card {
+  border-radius: 50%;
+}
+.fragment--music.fragment-slot--linked {
+  width: clamp(11rem, 17vw, 18rem);
+  aspect-ratio: 4 / 3;
+}
+.fragment--music.fragment-slot--linked .fragment-card {
+  border-radius: 0;
+}
+.fragment--music.fragment-slot--linked .fragment-caption {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 2.5rem 0.75rem 0.7rem;
+  font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+  text-align: left;
+}
+.fragment--architecture {
+  bottom: 3.5%;
+  left: 8%;
+  width: clamp(12rem, 22vw, 25rem);
+  aspect-ratio: 16 / 10;
+}
+.fragment--music {
+  right: 9%;
+  bottom: 2.5%;
+  width: clamp(9rem, 14vw, 15rem);
+  aspect-ratio: 1;
+}
+@keyframes cultural-drift {
+  from {
+    transform: translate3d(0, calc(var(--drift) * -0.5), 0) rotate(calc(var(--tilt) - 0.75deg));
+  }
+  to {
+    transform: translate3d(0, var(--drift), 0) rotate(calc(var(--tilt) + 0.75deg));
   }
 }
-
-@keyframes fragment-float {
-  50% {
-    margin-top: -0.45rem;
-  }
-}
-
-@media (max-width: 980px) {
-  .radar-scene {
-    width: min(65vw, 45rem);
-  }
-}
-
-@media (max-width: 760px) {
-  .radar-scene {
-    width: min(125vw, 40rem);
-    margin: -1rem -15vw -4rem;
-  }
-
-  .cultural-fragment--museum {
-    top: 9%;
-    left: 20%;
-  }
-
-  .cultural-fragment--stage {
+@media (max-width: 800px) {
+  .fragment-slot:nth-child(n + 3) {
     display: none;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .radar-scene,
-  .radar-scene__map,
-  .cultural-fragment {
-    transform: none;
+  .fragment-caption {
+    padding: 1.8rem 0.55rem 0.5rem;
+    font-size: 0.84rem;
   }
-
-  .radar-scene__sweep,
-  .radar-scene__core,
-  .cultural-fragment {
+  .fragment--dance {
+    top: 14%;
+    left: 0;
+    width: 46vw;
+  }
+  .fragment--workshop {
+    top: 11%;
+    right: 0;
+    width: 42vw;
+  }
+  .fragment--architecture {
+    bottom: -5%;
+    left: 8%;
+    width: 49vw;
+  }
+  .fragment--music {
+    right: 2%;
+    bottom: -2%;
+    width: 31vw;
+  }
+}
+@media (min-width: 601px) and (max-width: 800px) {
+  .fragment--dance {
+    top: 11%;
+    width: 36vw;
+  }
+  .fragment--workshop {
+    top: 9%;
+    width: 26vw;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fragment-card,
+  .fragment-media--event {
     animation: none;
   }
 }

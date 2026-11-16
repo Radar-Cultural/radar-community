@@ -11,7 +11,7 @@ function applyTheme(nextTheme: Theme) {
   document.documentElement.style.colorScheme = nextTheme
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute('content', nextTheme === 'dark' ? '#0d1321' : '#f2f4f7')
+    ?.setAttribute('content', nextTheme === 'dark' ? '#08090d' : '#ffffff')
 }
 
 export function initTheme() {

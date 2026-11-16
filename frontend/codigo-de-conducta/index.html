@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)" />
+    <meta name="robots" content="index, follow" />
+    <meta name="description" content="Normas de convivencia y participación de Radar Cultural." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Radar Cultural" />
+    <meta property="og:title" content="Código de conducta | Radar Cultural" />
+    <meta
+      property="og:description"
+      content="Normas de convivencia y participación de Radar Cultural."
+    />
+    <meta property="og:url" content="https://radarcultural.mx/codigo-de-conducta/" />
+    <link rel="canonical" href="https://radarcultural.mx/codigo-de-conducta/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      ;(() => {
+        try {
+          const saved = localStorage.getItem('radar-theme')
+          const theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+        } catch (_) {}
+      })()
+    </script>
+    <title>Código de conducta | Radar Cultural</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

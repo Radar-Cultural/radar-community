@@ -3,30 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0d1321" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta
       name="description"
-      content="Radar Cultural construye un punto de encuentro para descubrir, compartir y preservar la vida cultural de México mediante difusión gratuita y datos abiertos."
+      content="Radar Cultural conecta personas con eventos, experiencias y espacios culturales en México mediante difusión gratuita, datos abiertos y tecnología responsable."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_MX" />
     <meta property="og:site_name" content="Radar Cultural" />
-    <meta property="og:title" content="Radar Cultural — La cultura entra en tu radar" />
+    <meta
+      property="og:title"
+      content="Radar Cultural — La cultura sucede. Que nadie se la pierda."
+    />
     <meta
       property="og:description"
-      content="Un punto de encuentro para la vida cultural de México, construido con difusión gratuita, datos abiertos y tecnología responsable."
+      content="Descubre cómo Radar Cultural impulsa la difusión abierta de eventos, experiencias y espacios culturales en México."
     />
     <meta property="og:url" content="https://radarcultural.mx/" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Radar Cultural — La cultura sucede. Que nadie se la pierda."
+    />
+    <meta
+      name="twitter:description"
+      content="Difusión gratuita, datos abiertos y tecnología responsable para conectar a las personas con la vida cultural de México."
+    />
     <link rel="canonical" href="https://radarcultural.mx/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Radar Cultural",
-        "url": "https://radarcultural.mx/",
-        "description": "Plataforma mexicana en desarrollo para la difusión cultural gratuita y los datos abiertos."
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://radarcultural.mx/#organization",
+            "name": "Radar Cultural",
+            "url": "https://radarcultural.mx/"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://radarcultural.mx/#website",
+            "url": "https://radarcultural.mx/",
+            "name": "Radar Cultural",
+            "description": "Difusión gratuita y datos abiertos para conectar a las personas con eventos, experiencias y espacios culturales en México.",
+            "inLanguage": "es-MX",
+            "publisher": {
+              "@id": "https://radarcultural.mx/#organization"
+            }
+          }
+        ]
       }
     </script>
     <script>
@@ -42,7 +70,7 @@
         document.documentElement.style.colorScheme = theme
       })()
     </script>
-    <title>Radar Cultural — La cultura entra en tu radar</title>
+    <title>Radar Cultural | Difusión abierta de eventos culturales</title>
   </head>
   <body>
     <div id="app"></div>

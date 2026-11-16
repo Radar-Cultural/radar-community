@@ -1,53 +1,66 @@
+@font-face {
+  font-family: 'Syne Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 800;
+  src: url('@fontsource-variable/syne/files/syne-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Instrument Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url('@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+
 :root {
   color-scheme: dark;
-  --color-ink: #0d1321;
-  --color-wine: #611232;
-  --color-wine-accent: #8f2049;
-  --color-violet: #6d4aff;
-  --color-violet-soft: #a793ff;
-  --color-coral: #ff5b5b;
-  --color-jade: #19b39a;
-  --color-gold: #c9993e;
-  --color-bg: #101728;
-  --color-surface: #11192b;
-  --color-surface-muted: #182136;
-  --color-text: #f2f4f7;
-  --color-muted: #b8beca;
-  --color-line: rgb(211 219 232 / 0.14);
-  --color-line-strong: rgb(211 219 232 / 0.28);
-  --color-acrylic: rgb(20 29 48 / 0.58);
-  --color-acrylic-strong: rgb(25 35 57 / 0.82);
-  --font-display: Charter, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-  --font-sans: Inter, 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  --header-height: 6.2rem;
-  --page-gutter: clamp(1.15rem, 4vw, 4rem);
-  --page-width: 96rem;
-  --shadow-md: 0 1.4rem 4rem rgb(0 0 0 / 0.2);
-  --shadow-lg: 0 2rem 6rem rgb(0 0 0 / 0.35);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  font-family: var(--font-sans);
   font-synthesis: none;
+  --ink: #08090d;
+  --ink-soft: #12141b;
+  --white: #f7f8fa;
+  --white-pure: #fff;
+  --gray: #aeb2bd;
+  --gray-soft: #dfe2e8;
+  --blue: #3157ff;
+  --blue-bright: #6380ff;
+  --wine: #6b1536;
+  --coral: #ff5a4f;
+  --canvas: var(--ink);
+  --surface: var(--ink-soft);
+  --text: var(--white);
+  --text-soft: #c3c6cf;
+  --line: rgb(247 248 250 / 0.22);
+  --line-strong: rgb(247 248 250 / 0.46);
+  --acrylic: rgb(10 11 16 / 0.58);
+  --acrylic-strong: rgb(8 9 13 / 0.86);
+  --shadow: 0 1.6rem 4rem rgb(0 0 0 / 0.28);
+  --display: 'Syne Variable', 'Arial Black', sans-serif;
+  --body: 'Instrument Sans Variable', 'Segoe UI', sans-serif;
+  --page: 96rem;
+  --gutter: clamp(1.25rem, 4.25vw, 4.5rem);
+  --header: 5.75rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--body);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-bg: #f2f4f7;
-  --color-surface: #fff;
-  --color-surface-muted: #e8ebf1;
-  --color-text: #0d1321;
-  --color-muted: #50596b;
-  --color-line: rgb(13 19 33 / 0.12);
-  --color-line-strong: rgb(13 19 33 / 0.24);
-  --color-acrylic: rgb(255 255 255 / 0.58);
-  --color-acrylic-strong: rgb(255 255 255 / 0.84);
-  --color-wine-accent: #76183c;
-  --shadow-md: 0 1.4rem 4rem rgb(13 19 33 / 0.11);
-  --shadow-lg: 0 2rem 6rem rgb(13 19 33 / 0.16);
+  --canvas: var(--white-pure);
+  --surface: var(--white);
+  --text: var(--ink);
+  --text-soft: #464a55;
+  --line: rgb(8 9 13 / 0.18);
+  --line-strong: rgb(8 9 13 / 0.4);
+  --acrylic: rgb(255 255 255 / 0.64);
+  --acrylic-strong: rgb(255 255 255 / 0.88);
+  --shadow: 0 1.5rem 4rem rgb(8 9 13 / 0.14);
 }
 
 *,
@@ -58,9 +71,9 @@
 
 html {
   min-width: 20rem;
-  background: var(--color-ink);
+  background: var(--canvas);
   scroll-behavior: smooth;
-  scroll-padding-top: 2rem;
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -68,59 +81,56 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  background: var(--color-bg);
-  color: var(--color-text);
+  color: var(--text);
+  background: var(--canvas);
 }
 
-body,
 button,
 a {
+  color: inherit;
   font: inherit;
-}
-
-button,
-a {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  cursor: pointer;
+}
 img,
 svg {
   display: block;
 }
-
 ::selection {
-  color: #fff;
-  background: var(--color-wine);
+  color: var(--white);
+  background: var(--wine);
 }
 
 .page-width {
-  width: min(calc(100% - (var(--page-gutter) * 2)), var(--page-width));
+  width: min(calc(100% - (var(--gutter) * 2)), var(--page));
   margin-inline: auto;
 }
 
 .section-pad {
-  padding-block: clamp(6rem, 11vw, 11rem);
+  padding-block: clamp(7rem, 11vw, 11rem);
 }
 
-.section-dark {
-  color-scheme: dark;
-  --color-text: #f2f4f7;
-  --color-muted: #b8beca;
-  --color-line: rgb(211 219 232 / 0.14);
-  --color-line-strong: rgb(211 219 232 / 0.28);
-  --color-acrylic: rgb(20 29 48 / 0.58);
-  --color-acrylic-strong: rgb(25 35 57 / 0.82);
+.display-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(3.8rem, 7.6vw, 8.3rem);
+  font-weight: 720;
+  line-height: 0.91;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
 }
 
 .skip-link {
   position: fixed;
-  z-index: 2000;
+  z-index: 9999;
   top: 0.75rem;
   left: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.6rem;
-  color: #fff;
-  background: var(--color-violet);
+  padding: 0.8rem 1rem;
+  color: var(--white);
+  background: var(--blue);
   font-weight: 700;
   text-decoration: none;
   transform: translateY(-160%);
@@ -143,23 +153,30 @@ svg {
   border: 0 !important;
 }
 
+:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 0.28rem;
+}
 [data-reveal='pending'] {
   opacity: 0;
-  transform: translateY(2.5rem);
+  transform: translateY(1.5rem);
 }
-
 [data-revealed='true'] {
   opacity: 1;
   transform: translateY(0);
   transition:
-    opacity 720ms var(--ease-out),
-    transform 720ms var(--ease-out);
+    opacity 700ms var(--ease-out),
+    transform 700ms var(--ease-out);
 }
 
 @media (max-width: 760px) {
   :root {
-    --header-height: 5.25rem;
-    --page-gutter: 1.15rem;
+    --gutter: 1.15rem;
+    --header: 4.9rem;
+  }
+  .display-title {
+    font-size: clamp(3.2rem, 14vw, 5.4rem);
+    line-height: 0.93;
   }
 }
 
@@ -167,7 +184,6 @@ svg {
   html {
     scroll-behavior: auto;
   }
-
   *,
   *::before,
   *::after {
@@ -176,7 +192,6 @@ svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-
   [data-reveal='pending'] {
     opacity: 1;
     transform: none;

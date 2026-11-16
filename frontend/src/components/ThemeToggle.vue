@@ -11,19 +11,20 @@ const label = computed(() =>
 <template>
   <button
     class="theme-toggle"
+    :class="{ 'is-light': theme === 'light' }"
     type="button"
     :aria-label="label"
     :title="label"
     @click="toggleTheme"
   >
     <span class="theme-toggle__track" aria-hidden="true">
-      <svg class="theme-toggle__moon" viewBox="0 0 24 24">
+      <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24">
         <path d="M19 15.2A7.5 7.5 0 0 1 8.8 5 7.7 7.7 0 1 0 19 15.2Z" />
       </svg>
-      <svg class="theme-toggle__sun" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="3.2" />
+      <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3.4" />
         <path
-          d="M12 2.2v2.2M12 19.6v2.2M2.2 12h2.2M19.6 12h2.2M5.1 5.1l1.6 1.6M17.3 17.3l1.6 1.6M18.9 5.1l-1.6 1.6M6.7 17.3l-1.6 1.6"
+          d="M12 2.4v2.2M12 19.4v2.2M4.6 12H2.4M21.6 12h-2.2M5.2 5.2l1.55 1.55M17.25 17.25l1.55 1.55M18.8 5.2l-1.55 1.55M6.75 17.25 5.2 18.8"
         />
       </svg>
       <span class="theme-toggle__thumb"></span>
@@ -34,68 +35,99 @@ const label = computed(() =>
 <style scoped>
 .theme-toggle {
   display: grid;
-  padding: 0;
+  place-items: center;
+  justify-self: start;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.3rem;
   border: 0;
-  color: var(--color-text);
+  border-radius: 999px;
+  color: inherit;
   background: transparent;
-  cursor: pointer;
+  transition: transform 220ms var(--ease-out);
+}
+
+.theme-toggle:hover {
+  transform: rotate(-2deg);
 }
 
 .theme-toggle__track {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 4.35rem;
-  height: 2.25rem;
-  padding: 0.35rem;
-  border: 1px solid var(--color-line-strong);
+  place-items: center start;
+  width: 3.55rem;
+  height: 2rem;
+  padding: 0.32rem;
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
-  background: var(--color-acrylic);
-  box-shadow: inset 0 1px rgb(255 255 255 / 0.09);
+  background: var(--acrylic);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 3%, transparent);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-.theme-toggle svg {
+.theme-toggle__icon {
+  position: absolute;
   z-index: 1;
-  align-self: center;
-  justify-self: center;
-  width: 1rem;
-  height: 1rem;
+  top: 50%;
+  width: 0.86rem;
+  height: 0.86rem;
+  color: var(--text);
+  transform: translateY(-50%);
+  transition:
+    opacity 220ms ease,
+    color 220ms ease;
+}
+
+.theme-toggle__icon--moon {
+  left: 0.57rem;
+  fill: currentColor;
+  opacity: 0.92;
+}
+
+.theme-toggle__icon--sun {
+  right: 0.52rem;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
-  stroke-width: 1.65;
-}
-
-.theme-toggle__moon {
-  color: #fff;
-}
-
-.theme-toggle__sun {
-  color: var(--color-gold);
+  stroke-width: 1.8;
+  opacity: 0.12;
 }
 
 .theme-toggle__thumb {
   position: absolute;
-  top: 0.28rem;
-  left: 0.28rem;
-  width: 1.57rem;
-  height: 1.57rem;
+  z-index: 2;
+  top: 0.27rem;
+  right: 0.27rem;
+  width: 1.4rem;
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: linear-gradient(145deg, #8369ff, var(--color-violet));
-  box-shadow: 0 0.35rem 1rem rgb(109 74 255 / 0.36);
-  transition: transform 260ms var(--ease-out);
+  background: var(--blue);
+  box-shadow: 0 0.24rem 0.7rem rgb(8 9 13 / 0.2);
+  transition:
+    transform 260ms var(--ease-out),
+    background-color 260ms ease;
 }
 
-:global(html[data-theme='light'] .theme-toggle__thumb) {
-  transform: translateX(2.08rem);
-  background: #fff;
-  box-shadow: 0 0.3rem 0.9rem rgb(13 19 33 / 0.16);
+.theme-toggle.is-light .theme-toggle__thumb {
+  transform: translateX(-1.52rem);
+  background: var(--wine);
 }
 
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--color-violet);
-  outline-offset: 0.3rem;
-  border-radius: 999px;
+.theme-toggle.is-light .theme-toggle__icon--moon {
+  opacity: 0.12;
+}
+
+.theme-toggle.is-light .theme-toggle__icon--sun {
+  color: var(--ink);
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-toggle__icon,
+  .theme-toggle__thumb {
+    transition: none;
+  }
 }
 </style>
