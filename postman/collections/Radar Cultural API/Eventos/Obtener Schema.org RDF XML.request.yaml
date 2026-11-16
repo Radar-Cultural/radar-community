@@ -1,0 +1,20 @@
+$kind: http-request
+description: Representación RDF/XML equivalente al JSON-LD público.
+url: '{{baseUrl}}/events/{{eventSlug}}/schema.rdf'
+method: GET
+headers:
+  - key: Accept
+    value: application/rdf+xml
+order: 4000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('responde RDF/XML Schema.org', () => {
+        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/rdf+xml');
+        pm.expect(pm.response.text()).to.include('<schema:Event');
+        pm.expect(pm.response.text()).to.include('xmlns:rdf=');
+      });
+      pm.test('no conserva publicaciones retiradas en caché', () => {
+        pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store');
+      });

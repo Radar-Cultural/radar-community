@@ -1,6 +1,6 @@
 $kind: http-request
 description: ''
-url: '{{baseUrl}}/events/evento-de-prueba/'
+url: '{{baseUrl}}/events/{{eventSlug}}/'
 method: GET
 headers:
   Accept: application/json
@@ -12,5 +12,9 @@ scripts:
     language: text/javascript
     code: |-
       pm.test('devuelve el evento publicado solicitado', () => {
-        pm.expect(pm.response.json().slug).to.eql('evento-de-prueba');
+        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');
+        pm.expect(pm.response.json().slug).to.eql(pm.variables.get('eventSlug'));
+      });
+      pm.test('no conserva publicaciones retiradas en caché', () => {
+        pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store');
       });

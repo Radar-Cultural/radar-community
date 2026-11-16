@@ -67,6 +67,20 @@ jobs:
   backend:
     name: Backend quality and security
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: radar_ci
+          POSTGRES_USER: radar
+          POSTGRES_PASSWORD: radar-ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U radar -d radar_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: backend
@@ -74,7 +88,7 @@ jobs:
       DEBUG: "True"
       DJANGO_SECRET_KEY: ci-only-secret-key-with-more-than-fifty-unique-characters-4x8p7q2m9v
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
-      DATABASE_URL: sqlite:///ci.sqlite3
+      DATABASE_URL: postgresql://radar:radar-ci-only-password@127.0.0.1:5432/radar_ci
 
     steps:
       - name: Checkout
@@ -108,8 +122,7 @@ jobs:
       - name: Production security checks
         env:
           DEBUG: "False"
-          DATABASE_URL: sqlite:///ci-production.sqlite3
           DJANGO_ALLOWED_HOSTS: radarcultural.mx,www.radarcultural.mx
           DJANGO_CSRF_TRUSTED_ORIGINS: https://radarcultural.mx,https://www.radarcultural.mx
           DJANGO_SECURE_SSL_REDIRECT: "True"
-        run: python manage.py check --deploy --fail-level WARNING
+        run: python -m radar_api.deployment_checks

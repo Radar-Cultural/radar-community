@@ -1,13 +1,16 @@
 import uuid
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator, URLValidator
 from django.db import models
 from django.utils import timezone
-from django.utils.text import slugify
 
 from apps.accounts.models import OrganizationProfile
 from apps.catalog.models import Audience, Category, Place
+from apps.events.validators import validate_iana_time_zone
+from radar_api.identifiers import unique_slug
 
 
 class EventQuerySet(models.QuerySet):
@@ -81,11 +84,39 @@ class Event(models.Model):
         (DESCRIPTION_PERMISSION, 'Permiso registrado'),
     ]
 
+    IMAGE_CC0 = 'CC0-1.0'
+    IMAGE_CC_BY = 'CC-BY-4.0'
+    IMAGE_CC_BY_SA = 'CC-BY-SA-4.0'
+    IMAGE_ALL_RIGHTS = 'all-rights-reserved'
+    IMAGE_LICENSE_CHOICES = [
+        (IMAGE_CC0, 'CC0 1.0 Universal'),
+        (IMAGE_CC_BY, 'CC BY 4.0'),
+        (IMAGE_CC_BY_SA, 'CC BY-SA 4.0'),
+        (IMAGE_ALL_RIGHTS, 'Todos los derechos reservados'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = models.SlugField(max_length=280, unique=True, blank=True)
     title = models.CharField(max_length=255)
     summary = models.CharField(max_length=500)
     description = models.TextField(max_length=10_000)
+    language_code = models.CharField(
+        max_length=35,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$',
+                message='Usa una etiqueta de idioma como es-MX, en-US o zh-Hant-TW.',
+            )
+        ],
+        help_text='Idioma principal verificado del contenido; puede quedar vacío.',
+    )
+    time_zone = models.CharField(
+        max_length=64,
+        blank=True,
+        validators=[validate_iana_time_zone],
+        help_text='Zona IANA verificada del horario. Obligatoria para publicar eventos nuevos.',
+    )
     starts_at = models.DateTimeField(db_index=True)
     ends_at = models.DateTimeField(null=True, blank=True)
     event_status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_SCHEDULED)
@@ -138,6 +169,15 @@ class Event(models.Model):
     )
     admission_options = models.JSONField(default=list, blank=True)
     links = models.JSONField(default=list, blank=True)
+    image_url = models.URLField(blank=True)
+    image_license = models.CharField(
+        max_length=32,
+        choices=IMAGE_LICENSE_CHOICES,
+        default=IMAGE_ALL_RIGHTS,
+    )
+    image_credit = models.CharField(max_length=255, blank=True)
+    image_source_url = models.URLField(blank=True)
+    include_image_in_open_data = models.BooleanField(default=False)
     categories = models.ManyToManyField(Category, related_name='events')
     audiences = models.ManyToManyField(Audience, related_name='events', blank=True)
     description_license = models.CharField(
@@ -182,19 +222,21 @@ class Event(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base = slugify(self.title) or f'evento-{str(self.id)[:8]}'
-            candidate = base
-            counter = 2
-            while Event.objects.exclude(pk=self.pk).filter(slug=candidate).exists():
-                candidate = f'{base}-{counter}'
-                counter += 1
-            self.slug = candidate
+            self.slug = unique_slug(
+                Event,
+                value=self.title,
+                pk=self.pk,
+                prefix='evento',
+                max_length=self._meta.get_field('slug').max_length,
+            )
         if self.publication_status == self.PUBLICATION_PUBLISHED and not self.published_at:
             self.published_at = timezone.now()
         super().save(*args, **kwargs)
 
     def clean(self):
         errors = {}
+        if self.publication_status == self.PUBLICATION_PUBLISHED and not self.time_zone:
+            errors['time_zone'] = 'Indica la zona horaria verificada antes de publicar.'
         if self.ends_at and self.ends_at < self.starts_at:
             errors['ends_at'] = 'La fecha de término no puede ser anterior al inicio.'
         if (
@@ -209,12 +251,87 @@ class Event(models.Model):
             errors['online_url'] = 'Los eventos en línea o híbridos requieren un enlace.'
         if self.admission_type == self.ADMISSION_FREE and self.admission_options:
             errors['admission_options'] = 'Un evento gratuito no debe declarar opciones de cobro.'
+        if self.admission_type == self.ADMISSION_PAID:
+            option_errors = self._validate_admission_options()
+            if option_errors:
+                errors['admission_options'] = option_errors
+        link_errors = self._validate_links()
+        if link_errors:
+            errors['links'] = link_errors
         if not self.organizer and not self.external_organizer_name.strip():
             errors['external_organizer_name'] = (
                 'Indica una organización o el nombre público responsable.'
             )
+        if self.include_image_in_open_data:
+            if not self.image_url:
+                errors['image_url'] = 'Indica la URL de la imagen que se publicará.'
+            if not self.image_credit.strip():
+                errors['image_credit'] = 'El crédito es obligatorio para publicar la imagen.'
+            if not self.image_source_url:
+                errors['image_source_url'] = 'Indica la fuente original de la imagen.'
+            if self.image_license == self.IMAGE_ALL_RIGHTS:
+                errors['image_license'] = (
+                    'Una imagen con todos los derechos reservados no puede abrirse en la API.'
+                )
         if errors:
             raise ValidationError(errors)
+
+    def _validate_admission_options(self):
+        if not isinstance(self.admission_options, list) or not self.admission_options:
+            return 'Un evento con costo requiere al menos una opción de entrada.'
+        validator = URLValidator()
+        normalized = []
+        for index, option in enumerate(self.admission_options, start=1):
+            if not isinstance(option, dict):
+                return f'La opción {index} debe ser un objeto.'
+            name = str(option.get('name', '')).strip()
+            currency = str(option.get('price_currency', '')).strip().upper()
+            try:
+                price = Decimal(str(option.get('price', '')))
+            except (InvalidOperation, TypeError, ValueError):
+                return f'La opción {index} requiere un precio numérico.'
+            if not name:
+                return f'La opción {index} requiere nombre.'
+            if not price.is_finite() or price < 0:
+                return f'La opción {index} requiere un precio finito y no negativo.'
+            if len(currency) != 3 or not currency.isascii() or not currency.isalpha():
+                return f'La opción {index} requiere una moneda de tres letras ASCII.'
+            purchase_url = str(option.get('url', '')).strip()
+            if purchase_url:
+                try:
+                    validator(purchase_url)
+                except ValidationError:
+                    return f'La opción {index} contiene una URL de compra inválida.'
+            normalized_option = {
+                'name': name,
+                'price': format(price, 'f'),
+                'price_currency': currency,
+            }
+            if purchase_url:
+                normalized_option['url'] = purchase_url
+            normalized.append(normalized_option)
+        self.admission_options = normalized
+        return ''
+
+    def _validate_links(self):
+        if not isinstance(self.links, list):
+            return 'Los enlaces deben enviarse como una lista.'
+        validator = URLValidator()
+        normalized = []
+        for index, link in enumerate(self.links, start=1):
+            if not isinstance(link, dict):
+                return f'El enlace {index} debe ser un objeto.'
+            label = str(link.get('label', '')).strip()
+            url = str(link.get('url', '')).strip()
+            if not label or not url:
+                return f'El enlace {index} requiere etiqueta y URL.'
+            try:
+                validator(url)
+            except ValidationError:
+                return f'El enlace {index} contiene una URL inválida.'
+            normalized.append({'label': label, 'url': url})
+        self.links = normalized
+        return ''
 
     @property
     def organizer_name(self):
@@ -243,8 +360,18 @@ class EventScheduleItem(models.Model):
         return f'{self.event}: {self.title}'
 
     def clean(self):
+        errors = {}
         if self.ends_at and self.ends_at < self.starts_at:
-            raise ValidationError({'ends_at': 'El término no puede ser anterior al inicio.'})
+            errors['ends_at'] = 'El término no puede ser anterior al inicio.'
+        if self.event_id and self.starts_at < self.event.starts_at:
+            errors['starts_at'] = 'La actividad no puede iniciar antes que el evento.'
+        if self.event_id and self.event.ends_at:
+            if self.starts_at > self.event.ends_at:
+                errors['starts_at'] = 'La actividad no puede iniciar después que el evento.'
+            if self.ends_at and self.ends_at > self.event.ends_at:
+                errors['ends_at'] = 'La actividad no puede terminar después que el evento.'
+        if errors:
+            raise ValidationError(errors)
 
 
 class EventContributor(models.Model):
@@ -300,3 +427,25 @@ class PublicationAcceptance(models.Model):
 
     def __str__(self):
         return f'{self.event} · {self.terms_version}'
+
+
+class EventPublicationDecision(models.Model):
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.PROTECT,
+        related_name='publication_decisions',
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='event_publication_decisions',
+    )
+    previous_status = models.CharField(max_length=16, choices=Event.PUBLICATION_CHOICES)
+    new_status = models.CharField(max_length=16, choices=Event.PUBLICATION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ('-created_at', '-pk')
+
+    def __str__(self):
+        return f'{self.event} · {self.previous_status} → {self.new_status}'

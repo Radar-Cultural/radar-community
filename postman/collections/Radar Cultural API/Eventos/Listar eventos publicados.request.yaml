@@ -21,3 +21,6 @@ scripts:
         pm.expect(body).to.have.all.keys('count', 'next', 'previous', 'results');
         pm.expect(body.results).to.be.an('array');
       });
+      pm.test('no conserva publicaciones retiradas en caché', () => {
+        pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store');
+      });

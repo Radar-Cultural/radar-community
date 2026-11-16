@@ -1,0 +1,25 @@
+$kind: http-request
+description: Lista paginada de organizaciones con identidad pública verificada.
+url: '{{baseUrl}}/organizations/?page=1&page_size=20'
+method: GET
+headers:
+  - key: Accept
+    value: application/json
+queryParams:
+  - key: page
+    value: '1'
+  - key: page_size
+    value: '20'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('no filtra datos de contacto internos', () => {
+        const body = pm.response.json();
+        pm.expect(body.results).to.be.an('array');
+        body.results.forEach((organization) => {
+          pm.expect(organization.verified).to.eql(true);
+          pm.expect(organization).not.to.have.property('contact_email');
+        });
+      });

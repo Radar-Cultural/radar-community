@@ -1,16 +1,29 @@
 import hashlib
-import re
 import unicodedata
 import uuid
 
+from django.core.validators import RegexValidator
 from django.db import models
-from django.utils.text import slugify
+
+from radar_api.identifiers import compact_identity_text, unique_slug
 
 
 def normalize_catalog_text(value):
     normalized = unicodedata.normalize('NFKD', value or '').casefold()
-    normalized = ''.join(char for char in normalized if not unicodedata.combining(char))
-    return re.sub(r'[^a-z0-9]+', ' ', normalized).strip()
+    characters = []
+    latin_base = False
+    for char in normalized:
+        if unicodedata.category(char).startswith('M'):
+            if not latin_base and characters and characters[-1] != ' ':
+                characters.append(char)
+            continue
+        if char.isalnum():
+            characters.append(char)
+            latin_base = 'LATIN' in unicodedata.name(char, '')
+        else:
+            characters.append(' ')
+            latin_base = False
+    return ' '.join(''.join(characters).split())
 
 
 class NamedCatalog(models.Model):
@@ -30,7 +43,13 @@ class NamedCatalog(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = unique_slug(
+                self.__class__,
+                value=self.name,
+                pk=self.pk,
+                prefix=self._meta.model_name,
+                max_length=self._meta.get_field('slug').max_length,
+            )
         super().save(*args, **kwargs)
 
 
@@ -86,7 +105,16 @@ class Place(models.Model):
     address = models.CharField(max_length=500, blank=True)
     locality = models.CharField(max_length=160, blank=True)
     region = models.CharField(max_length=160, blank=True)
-    country_code = models.CharField(max_length=2, default='MX')
+    country_code = models.CharField(
+        max_length=2,
+        validators=[
+            RegexValidator(
+                regex=r'^[A-Za-z]{2}$',
+                message='Usa un código de país ISO 3166-1 de dos letras, como MX o FR.',
+            )
+        ],
+        help_text='País del lugar. Indica el código ISO 3166-1 de dos letras.',
+    )
     postal_code = models.CharField(max_length=20, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -108,25 +136,28 @@ class Place(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.normalized_name = normalize_catalog_text(self.name)
+        self.country_code = self.country_code.upper()
+        normalized_name = normalize_catalog_text(self.name)
+        self.normalized_name = compact_identity_text(normalized_name)
         identity_source = '|'.join(
             (
-                self.normalized_name,
+                normalized_name,
                 normalize_catalog_text(self.address),
                 normalize_catalog_text(self.locality),
+                normalize_catalog_text(self.region),
+                self.country_code,
                 str(self.parent_id or 'root'),
             )
         )
         self.identity_key = hashlib.sha256(identity_source.encode()).hexdigest()
         if not self.slug:
-            base = slugify(self.name) or f'lugar-{str(self.id)[:8]}'
-            candidate = base
-            counter = 2
-            while Place.objects.exclude(pk=self.pk).filter(slug=candidate).exists():
-                candidate = f'{base}-{counter}'
-                counter += 1
-            self.slug = candidate
-        self.country_code = self.country_code.upper()
+            self.slug = unique_slug(
+                Place,
+                value=self.name,
+                pk=self.pk,
+                prefix='lugar',
+                max_length=self._meta.get_field('slug').max_length,
+            )
         super().save(*args, **kwargs)
 
     @property
@@ -139,15 +170,21 @@ class Place(models.Model):
 class PlaceAlias(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name='aliases')
     name = models.CharField(max_length=255)
-    normalized_name = models.CharField(max_length=255, unique=True, editable=False)
+    normalized_name = models.CharField(max_length=255, editable=False, db_index=True)
 
     class Meta:
         ordering = ('name',)
         verbose_name_plural = 'place aliases'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('place', 'normalized_name'),
+                name='unique_place_alias_per_place',
+            )
+        ]
 
     def __str__(self):
         return f'{self.name} → {self.place.name}'
 
     def save(self, *args, **kwargs):
-        self.normalized_name = normalize_catalog_text(self.name)
+        self.normalized_name = compact_identity_text(normalize_catalog_text(self.name))
         super().save(*args, **kwargs)

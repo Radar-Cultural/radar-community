@@ -1,0 +1,3 @@
+$kind: collection
+description: Sólo perfiles verificados; no expone correos ni decisiones internas.
+order: 4000

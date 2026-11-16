@@ -1,11 +1,15 @@
 openapi: 3.1.0
 info:
   title: Radar Cultural API
-  version: 0.2.0
+  version: 0.3.0
   description: >-
-    Contrato inicial de lectura pública para eventos culturales publicados y sus
-    catálogos. Las operaciones de escritura permanecen fuera de la API pública
-    mientras se define el flujo de identidad, revisión y moderación.
+    Fuente canónica de lectura pública para eventos culturales publicados, sus
+    organizaciones y catálogos. Incluye representaciones Schema.org e iCalendar
+    para consumidores como Luna. Las operaciones de escritura permanecen fuera
+    de la API pública y se gestionan mediante administración protegida. Las
+    URL absolutas de las respuestas usan el Host validado de la solicitud.
+    Las respuestas públicas de la API usan Cache-Control no-store para que
+    publicaciones, catálogos u organizaciones retiradas no permanezcan en caché.
   license:
     name: Licencia de Radar Community pendiente
 servers:
@@ -17,6 +21,7 @@ tags:
   - name: Sistema
   - name: Eventos
   - name: Catálogos
+  - name: Organizaciones
 paths:
   /status/:
     get:
@@ -54,32 +59,86 @@ paths:
           description: Slug de categoría.
           schema:
             type: string
+            maxLength: 180
+            pattern: '^[-a-zA-Z0-9_]+$'
         - name: audience
           in: query
           description: Slug de público objetivo.
           schema:
             type: string
+            maxLength: 180
+            pattern: '^[-a-zA-Z0-9_]+$'
         - name: place
           in: query
           description: UUID del lugar.
           schema:
             type: string
             format: uuid
+            maxLength: 36
         - name: from
           in: query
-          description: Fecha mínima de inicio, ISO 8601.
+          description: Fecha mínima de inicio, ISO 8601 con zona horaria explícita (Z u offset).
           schema:
             type: string
             format: date-time
+            maxLength: 64
+        - name: not_finished_at
+          in: query
+          description: Eventos futuros o aún en curso en este instante; considera el inicio o fin de cada actividad del programa. ISO 8601 con zona horaria explícita.
+          schema:
+            type: string
+            format: date-time
+            maxLength: 64
         - name: to
           in: query
-          description: Fecha máxima de inicio, ISO 8601.
+          description: Fecha máxima de inicio, ISO 8601 con zona horaria explícita (Z u offset). Debe ser igual o posterior a `from`.
           schema:
             type: string
             format: date-time
+            maxLength: 64
+        - name: updated_since
+          in: query
+          description: Sólo eventos públicos modificados desde esta fecha y hora ISO 8601 con zona horaria explícita (Z u offset). Incluye ediciones de horario, categorías, públicos, lugar u organización realizadas mediante los modelos de Django.
+          schema:
+            type: string
+            format: date-time
+            maxLength: 64
+        - name: organizer
+          in: query
+          description: Slug de la organización responsable.
+          schema:
+            type: string
+            maxLength: 280
+            pattern: '^[-a-zA-Z0-9_]+$'
+        - name: status
+          in: query
+          description: Estado Schema.org del evento.
+          schema:
+            type: string
+            enum: [EventScheduled, EventCancelled, EventPostponed, EventRescheduled]
+        - name: has_image
+          in: query
+          description: Filtra eventos cuya imagen tiene licencia reutilizable y está disponible en la respuesta pública.
+          schema:
+            type: boolean
+        - name: attendance_mode
+          in: query
+          description: Modalidad Schema.org del evento.
+          schema:
+            type: string
+            enum: [OfflineEventAttendanceMode, OnlineEventAttendanceMode, MixedEventAttendanceMode]
+        - name: ordering
+          in: query
+          description: Orden estable para listados y sincronización incremental.
+          schema:
+            type: string
+            enum: [starts_at, -starts_at, updated_at, -updated_at]
       responses:
         '200':
           description: Página de eventos públicos
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -102,10 +161,70 @@ paths:
       responses:
         '200':
           description: Evento público
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/schema/:
+    get:
+      tags: [Eventos]
+      summary: Obtener la representación Schema.org de un evento
+      operationId: retrieveEventSchema
+      parameters:
+        - $ref: '#/components/parameters/EventSlug'
+      responses:
+        '200':
+          description: Evento público como JSON-LD Schema.org
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/SchemaOrgEvent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/schema.rdf:
+    get:
+      tags: [Eventos]
+      summary: Obtener la representación RDF/XML de un evento
+      operationId: retrieveEventRdf
+      parameters:
+        - $ref: '#/components/parameters/EventSlug'
+      responses:
+        '200':
+          description: Evento público como RDF/XML con vocabulario Schema.org
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/rdf+xml:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/calendar.ics:
+    get:
+      tags: [Eventos]
+      summary: Descargar un evento como iCalendar
+      operationId: retrieveEventCalendar
+      parameters:
+        - $ref: '#/components/parameters/EventSlug'
+      responses:
+        '200':
+          description: Evento público en formato iCalendar RFC 5545, con ubicación internacional explícita, texto escapado y líneas UTF-8 plegadas a un máximo de 75 octetos.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            text/calendar:
+              schema:
+                type: string
         '404':
           $ref: '#/components/responses/NotFound'
   /categories/:
@@ -158,8 +277,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedPlaces'
+  /places/{id}/:
+    get:
+      tags: [Catálogos]
+      summary: Consultar un lugar activo
+      operationId: retrievePlace
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lugar activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /organizations/:
+    get:
+      tags: [Organizaciones]
+      summary: Listar organizaciones verificadas
+      operationId: listOrganizations
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: q
+          in: query
+          description: Búsqueda por nombre o descripción pública.
+          schema:
+            type: string
+            maxLength: 120
+      responses:
+        '200':
+          description: Página de organizaciones verificadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizations'
+        '400':
+          $ref: '#/components/responses/InvalidQuery'
+  /organizations/{slug}/:
+    get:
+      tags: [Organizaciones]
+      summary: Consultar una organización verificada
+      operationId: retrieveOrganization
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Organización verificada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
+  headers:
+    NoStore:
+      description: Evita conservar una publicación que luego pueda ser retirada.
+      schema:
+        type: string
+        const: no-store
   parameters:
+    EventSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
     Page:
       name: page
       in: query
@@ -256,8 +451,10 @@ components:
           type: string
         country_code:
           type: string
+          description: Código de país ISO 3166-1 alfa-2 del lugar.
           minLength: 2
           maxLength: 2
+          pattern: '^[A-Z]{2}$'
         latitude:
           type: string
           nullable: true
@@ -265,19 +462,24 @@ components:
           type: string
           nullable: true
         same_as:
-          type: string
+          type: [string, 'null']
           format: uri
     Organization:
       type: object
       additionalProperties: false
-      required: [name, slug, website, verified]
+      required: [id, name, slug, description, website, same_as, verified]
       properties:
+        id:
+          type: string
+          format: uuid
         name:
           type: string
         slug:
           type: string
-        website:
+        description:
           type: string
+        website:
+          type: [string, 'null']
           format: uri
         same_as:
           type: array
@@ -312,6 +514,8 @@ components:
         - title
         - summary
         - description
+        - language_code
+        - time_zone
         - starts_at
         - event_status
         - attendance_mode
@@ -319,7 +523,13 @@ components:
         - categories
         - audiences
         - schedule
+        - links
         - source_url
+        - description_license
+        - license_url
+        - schema_url
+        - rdf_url
+        - calendar_url
         - updated_at
       properties:
         id:
@@ -333,6 +543,14 @@ components:
           type: string
         description:
           type: string
+        language_code:
+          description: Idioma principal del contenido en formato BCP 47; null cuando aún no se ha verificado.
+          type: [string, 'null']
+          example: es-MX
+        time_zone:
+          description: Zona IANA verificada del horario del evento; null en registros heredados sin zona comprobada.
+          type: [string, 'null']
+          example: Europe/Paris
         starts_at:
           type: string
           format: date-time
@@ -352,14 +570,16 @@ components:
         admission_options:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/AdmissionOption'
         place:
           oneOf:
             - $ref: '#/components/schemas/Place'
             - type: 'null'
         online_url:
-          type: string
+          type: [string, 'null']
           format: uri
+        location_details:
+          type: string
         organizer:
           oneOf:
             - $ref: '#/components/schemas/Organization'
@@ -383,13 +603,113 @@ components:
         links:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/EventLink'
+        image:
+          oneOf:
+            - $ref: '#/components/schemas/EventImage'
+            - type: 'null'
         source_url:
+          type: string
+          format: uri
+        description_license:
+          type: string
+          enum: [CC0-1.0, permission-recorded]
+        license_url:
+          description: URL de la licencia pública; null si sólo consta un permiso registrado sin licencia pública.
+          type: [string, 'null']
+          format: uri
+        schema_url:
+          type: string
+          format: uri
+        rdf_url:
+          type: string
+          format: uri
+        calendar_url:
           type: string
           format: uri
         updated_at:
           type: string
           format: date-time
+          description: Cursor de la última edición del evento o de sus datos públicos relacionados.
+    AdmissionOption:
+      type: object
+      additionalProperties: false
+      required: [name, price, price_currency]
+      properties:
+        name:
+          type: string
+        price:
+          oneOf:
+            - type: string
+            - type: number
+          minimum: 0
+        price_currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
+          description: Moneda explícita de tres letras ASCII; no se supone MXN por defecto.
+        url:
+          type: string
+          format: uri
+          description: Enlace opcional de compra o reserva publicado por la fuente.
+    EventLink:
+      type: object
+      additionalProperties: false
+      required: [label, url]
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+          format: uri
+    EventImage:
+      type: object
+      additionalProperties: false
+      required: [url, license, credit, source_url]
+      properties:
+        url:
+          type: string
+          format: uri
+        license:
+          type: string
+          enum: [CC0-1.0, CC-BY-4.0, CC-BY-SA-4.0, all-rights-reserved]
+        credit:
+          type: string
+        source_url:
+          type: string
+          format: uri
+    SchemaOrgEvent:
+      type: object
+      required: ['@context', '@type', '@id', url, name, startDate, eventStatus, eventAttendanceMode]
+      properties:
+        '@context':
+          type: string
+          const: https://schema.org
+        '@type':
+          type: string
+          const: Event
+        '@id':
+          type: string
+        url:
+          type: string
+          format: uri
+          description: URL canónica de la ficha HTML pública del evento.
+        name:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        eventStatus:
+          type: string
+          format: uri
+        eventAttendanceMode:
+          type: string
+          format: uri
+      additionalProperties: true
     Pagination:
       type: object
       required: [count, next, previous]
@@ -443,3 +763,13 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Place'
+    PaginatedOrganizations:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [results]
+          properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Organization'

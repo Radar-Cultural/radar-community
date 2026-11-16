@@ -1,0 +1,20 @@
+$kind: http-request
+description: Exportación interoperable del evento sin almacenar calendarios personales.
+url: '{{baseUrl}}/events/{{eventSlug}}/calendar.ics'
+method: GET
+headers:
+  - key: Accept
+    value: text/calendar
+order: 5000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('responde un calendario válido', () => {
+        pm.expect(pm.response.headers.get('Content-Type')).to.include('text/calendar');
+        pm.expect(pm.response.text()).to.include('BEGIN:VCALENDAR');
+        pm.expect(pm.response.text()).to.include('END:VCALENDAR');
+      });
+      pm.test('no conserva publicaciones retiradas en caché', () => {
+        pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store');
+      });

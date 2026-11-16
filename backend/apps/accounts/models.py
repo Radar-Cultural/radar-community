@@ -3,7 +3,8 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-from django.utils.text import slugify
+
+from radar_api.identifiers import unique_slug
 
 
 class User(AbstractUser):
@@ -78,13 +79,20 @@ class OrganizationProfile(models.Model):
         ordering = ('official_name',)
         verbose_name = 'organización'
         verbose_name_plural = 'organizaciones'
+        permissions = [('verify_organization', 'Puede verificar organizaciones')]
 
     def __str__(self):
         return self.official_name
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.official_name)
+            self.slug = unique_slug(
+                OrganizationProfile,
+                value=self.official_name,
+                pk=self.pk,
+                prefix='organizacion',
+                max_length=self._meta.get_field('slug').max_length,
+            )
         if self.is_verified and not self.verified_at:
             self.verified_at = timezone.now()
         super().save(*args, **kwargs)

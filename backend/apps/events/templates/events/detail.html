@@ -1,0 +1,189 @@
+{% load static %}<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+    <meta name="description" content="{{ event.summary }}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta property="og:type" content="event">
+    <meta property="og:site_name" content="Radar Cultural">
+    <meta property="og:title" content="{{ event.title }} | Radar Cultural">
+    <meta property="og:description" content="{{ event.summary }}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    {% if image %}<meta property="og:image" content="{{ image.contentUrl }}">{% endif %}
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="{% static 'events/detail.css' %}?v=5">
+    <script type="application/ld+json">{{ schema_json }}</script>
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem('radar-theme');
+          document.documentElement.dataset.theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        } catch (_) {
+          document.documentElement.dataset.theme =
+            matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+      })();
+    </script>
+    <title>{{ event.title }} | Radar Cultural</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="/" aria-label="Radar Cultural, inicio"><span>Radar Cultural</span></a>
+        <nav id="site-navigation" class="site-nav" aria-label="Principal">
+          <a href="/agenda/">Agenda</a>
+          <a href="/#proyecto">Cómo funciona</a>
+          <a href="/#datos">Datos abiertos</a>
+          <a href="/#comunidad">Comunidad</a>
+        </nav>
+        <div class="site-header__actions">
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">
+            <span class="theme-toggle__track" aria-hidden="true">
+              <svg class="theme-toggle__icon theme-toggle__moon" viewBox="0 0 24 24"><path d="M19 15.2A7.5 7.5 0 0 1 8.8 5 7.7 7.7 0 1 0 19 15.2Z"/></svg>
+              <svg class="theme-toggle__icon theme-toggle__sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.4v2.2M12 19.4v2.2M4.6 12H2.4M21.6 12h-2.2M5.2 5.2l1.55 1.55M17.25 17.25l1.55 1.55M18.8 5.2l-1.55 1.55M6.75 17.25 5.2 18.8"/></svg>
+              <span class="theme-toggle__thumb"></span>
+            </span>
+          </button>
+          <button id="menu-toggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+        </div>
+      </div>
+    </header>
+    <main id="contenido">
+      <article class="event">
+        <a class="back" href="/agenda/">← Volver a la agenda</a>
+        <div class="intro">
+          <div>
+            <p class="eyebrow">En la agenda · {{ organizer_name }}</p>
+            <h1{% if event.language_code %} lang="{{ event.language_code }}"{% endif %}>{{ event.title }}</h1>
+            <p class="summary"{% if event.language_code %} lang="{{ event.language_code }}"{% endif %}>{{ event.summary }}</p>
+          </div>
+          <span class="status">{{ event.get_event_status_display }}</span>
+        </div>
+        {% if image %}
+          <figure class="cover">
+            <img src="{{ image.contentUrl }}" alt="" loading="eager">
+            <figcaption>Imagen: {{ image.creditText }} · <a href="{{ image.acquireLicensePage }}" target="_blank" rel="noopener noreferrer">Fuente</a></figcaption>
+          </figure>
+        {% endif %}
+        <div class="content-grid">
+          <section aria-labelledby="about-title">
+            <h2 id="about-title">Sobre el evento</h2>
+            <div class="description"{% if event.language_code %} lang="{{ event.language_code }}"{% endif %}>{{ event.description|linebreaks }}</div>
+            {% if event.categories.all %}
+              <ul class="categories" aria-label="Categorías">
+                {% for category in event.categories.all %}<li>{{ category.name }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+            {% if event.audiences.all %}
+              <p class="audiences"><strong>Para quién:</strong> {% for audience in event.audiences.all %}{{ audience.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+            {% endif %}
+            {% if event.schedule_items.all %}
+              <section class="detail-section" aria-labelledby="schedule-title">
+                <h3 id="schedule-title">Programa</h3>
+                <ol class="program-list">
+                  {% for item in event.schedule_items.all %}
+                    <li>
+                      <strong>{{ item.title }}</strong>
+                      <time datetime="{{ item.starts_at|date:'c' }}">{{ item.starts_at|date:'j F Y, H:i T' }}</time>
+                      {% if item.ends_at %}<span>hasta <time datetime="{{ item.ends_at|date:'c' }}">{{ item.ends_at|date:'j F Y, H:i T' }}</time></span>{% endif %}
+                    </li>
+                  {% endfor %}
+                </ol>
+              </section>
+            {% endif %}
+            {% if event_links %}
+              <section class="detail-section" aria-labelledby="links-title">
+                <h3 id="links-title">Más información</h3>
+                <ul class="related-links">
+                  {% for link in event_links %}<li><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }} ↗</a></li>{% endfor %}
+                </ul>
+              </section>
+            {% endif %}
+            <a class="source" href="{{ event.source_url }}" target="_blank" rel="noopener noreferrer">Consultar la fuente del evento ↗</a>
+          </section>
+          <aside aria-labelledby="practical-title">
+            <h2 id="practical-title">Cuándo y dónde</h2>
+            <dl>
+              <dt>Inicio</dt>
+              <dd><time datetime="{{ event.starts_at|date:'c' }}">{{ event.starts_at|date:'j F Y, H:i T' }}</time></dd>
+              <dd class="address">Zona del evento: {{ event.time_zone|default:'UTC (registro heredado)' }}</dd>
+              {% if event.ends_at %}
+                <dt>Fin</dt>
+                <dd><time datetime="{{ event.ends_at|date:'c' }}">{{ event.ends_at|date:'j F Y, H:i T' }}</time></dd>
+              {% endif %}
+              <dt>Modalidad</dt>
+              <dd>{{ event.get_attendance_mode_display }}</dd>
+              {% if event.place %}
+                <dt>Lugar</dt>
+                <dd>{{ event.place.name }}{% if event.location_details %} · {{ event.location_details }}{% endif %}</dd>
+                <dd class="address">{% if event.place.address %}{{ event.place.address }}, {% endif %}{% if event.place.locality %}{{ event.place.locality }}, {% endif %}{% if event.place.region %}{{ event.place.region }}, {% endif %}{{ event.place.country_code }}</dd>
+              {% endif %}
+              {% if event.online_url %}
+                <dt>Acceso en línea</dt>
+                <dd><a href="{{ event.online_url }}" target="_blank" rel="noopener noreferrer">Ir al enlace del evento ↗</a></dd>
+              {% endif %}
+              {% if event.admission_type == 'free' %}
+                <dt>Entrada</dt>
+                <dd>Gratuita</dd>
+              {% else %}
+                <dt>Opciones de entrada</dt>
+                <dd>
+                  <ul class="admission-list">
+                    {% for option in admission_options %}
+                      <li>
+                        {% if option.url %}<a href="{{ option.url }}" target="_blank" rel="noopener noreferrer">{% endif %}{{ option.name }} · {{ option.price }} {{ option.price_currency }}{% if option.url %} ↗</a>{% endif %}
+                      </li>
+                    {% empty %}
+                      <li>Consulta las opciones en la fuente.</li>
+                    {% endfor %}
+                  </ul>
+                </dd>
+              {% endif %}
+            </dl>
+            <a class="calendar" href="{% url 'event-calendar' slug=event.slug %}">Añadir al calendario ↓</a>
+          </aside>
+        </div>
+      </article>
+    </main>
+    <footer><a href="/">Radar Cultural</a><span>La cultura sucede. Que nadie se la pierda.</span></footer>
+    <script>
+      const themeToggle = document.getElementById('theme-toggle');
+      const menuToggle = document.getElementById('menu-toggle');
+      const navigation = document.getElementById('site-navigation');
+      const updateThemeToggleLabel = () => {
+        const target = document.documentElement.dataset.theme === 'dark' ? 'claro' : 'oscuro';
+        themeToggle.setAttribute('aria-label', `Cambiar a modo ${target}`);
+        themeToggle.setAttribute('title', `Cambiar a modo ${target}`);
+        themeToggle.classList.toggle('is-light', document.documentElement.dataset.theme === 'light');
+      };
+      updateThemeToggleLabel();
+      themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem('radar-theme', next); } catch (_) {}
+        updateThemeToggleLabel();
+      });
+      menuToggle.addEventListener('click', () => {
+        const open = menuToggle.getAttribute('aria-expanded') !== 'true';
+        menuToggle.setAttribute('aria-expanded', String(open));
+        menuToggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+        navigation.classList.toggle('site-nav--open', open);
+      });
+      navigation.addEventListener('click', (event) => {
+        if (event.target.closest('a')) {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          menuToggle.setAttribute('aria-label', 'Abrir menú');
+          navigation.classList.remove('site-nav--open');
+        }
+      });
+    </script>
+  </body>
+</html>
